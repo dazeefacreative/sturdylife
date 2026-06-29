@@ -5,6 +5,7 @@ import logoSrc from "@/imports/sturdy-life.png";
 const columns = [
   { heading: "Shop", links: [{ label: "All Products", to: "/shop" }, { label: "Hoodies", to: "/shop/hoodies" }, { label: "Beanie Caps", to: "/shop/beanie-caps" }, { label: "Shirts", to: "/shop/shirts" }] },
   { heading: "Company", links: [{ label: "About", to: "/about" }, { label: "Contact", to: "/contact" }] },
+  { heading: "Help", links: [{ label: "Shipping", to: "/shipping" }, { label: "Returns", to: "/returns" }, { label: "Privacy Policy", to: "/privacy-policy" }, { label: "Terms of Service", to: "/terms-of-service" }] },
 ];
 
 const footerLinkVariants = {

@@ -21,6 +21,10 @@ import OrderDetailPage from "@/app/pages/OrderDetailPage";
 import WishlistPage    from "@/app/pages/WishlistPage";
 import ProfilePage     from "@/app/pages/ProfilePage";
 import NotFoundPage    from "@/app/pages/NotFoundPage";
+import ShippingPage      from "@/app/pages/ShippingPage";
+import ReturnsPage       from "@/app/pages/ReturnsPage";
+import PrivacyPolicyPage from "@/app/pages/PrivacyPolicyPage";
+import TermsPage         from "@/app/pages/TermsPage";
 
 import AdminLayout     from "@/app/pages/admin/AdminLayout";
 import DashboardPage   from "@/app/pages/admin/DashboardPage";
@@ -65,6 +69,10 @@ function AppRoutes() {
       <Route path="/product/:slug"   element={<ProductPage />} />
       <Route path="/about"           element={<AboutPage />} />
       <Route path="/contact"         element={<ContactPage />} />
+      <Route path="/shipping"        element={<ShippingPage />} />
+      <Route path="/returns"         element={<ReturnsPage />} />
+      <Route path="/privacy-policy"  element={<PrivacyPolicyPage />} />
+      <Route path="/terms-of-service" element={<TermsPage />} />
       <Route path="/cart"            element={<CartPage />} />
       <Route path="/login"           element={<LoginPage />} />
       <Route path="/register"        element={<RegisterPage />} />

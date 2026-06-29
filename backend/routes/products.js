@@ -1,4 +1,6 @@
 const express  = require("express");
+const fs       = require("fs");
+const path     = require("path");
 const slugify  = require("slugify");
 const db       = require("../config/db");
 const { authenticate, adminOnly } = require("../middleware/auth");
@@ -56,7 +58,7 @@ router.get("/:slug", async (req, res) => {
     if (!product) return res.status(404).json({ error: "Product not found" });
 
     const [images] = await db.query(
-      "SELECT image_url, is_primary FROM product_images WHERE product_id = ? ORDER BY display_order",
+      "SELECT id, image_url, is_primary FROM product_images WHERE product_id = ? ORDER BY display_order",
       [product.id]
     );
 
@@ -170,6 +172,36 @@ router.put("/:id", authenticate, adminOnly, upload.array("images", 8), async (re
     res.status(500).json({ error: "Failed to update product" });
   } finally {
     conn.release();
+  }
+});
+
+// ─── DELETE /api/products/:productId/images/:imageId — admin remove one image ──
+router.delete("/:productId/images/:imageId", authenticate, adminOnly, async (req, res) => {
+  try {
+    const [[image]] = await db.query(
+      "SELECT * FROM product_images WHERE id = ? AND product_id = ?",
+      [req.params.imageId, req.params.productId]
+    );
+    if (!image) return res.status(404).json({ error: "Image not found" });
+
+    await db.query("DELETE FROM product_images WHERE id = ?", [image.id]);
+
+    const filePath = path.join(__dirname, "..", image.image_url);
+    fs.unlink(filePath, () => {}); // best-effort, don't fail the request if missing
+
+    if (image.is_primary) {
+      const [[next]] = await db.query(
+        "SELECT id FROM product_images WHERE product_id = ? ORDER BY display_order LIMIT 1",
+        [req.params.productId]
+      );
+      if (next) {
+        await db.query("UPDATE product_images SET is_primary = 1 WHERE id = ?", [next.id]);
+      }
+    }
+
+    res.json({ message: "Image removed" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to remove image" });
   }
 });
 

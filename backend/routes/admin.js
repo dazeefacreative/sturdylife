@@ -77,6 +77,26 @@ router.put("/orders/:id/status", async (req, res) => {
   res.json({ message: "Status updated" });
 });
 
+// ─── GET /api/admin/products/:id — full product for editing ──
+router.get("/products/:id", async (req, res) => {
+  const [[product]] = await db.query(
+    "SELECT * FROM products WHERE id = ?",
+    [req.params.id]
+  );
+  if (!product) return res.status(404).json({ error: "Product not found" });
+
+  const [images] = await db.query(
+    "SELECT id, image_url, is_primary FROM product_images WHERE product_id = ? ORDER BY display_order",
+    [product.id]
+  );
+  const [sizes] = await db.query(
+    "SELECT size, stock_quantity FROM product_sizes WHERE product_id = ? ORDER BY id",
+    [product.id]
+  );
+
+  res.json({ ...product, images, sizes });
+});
+
 // ─── GET /api/admin/customers ─────────────────────────────────
 router.get("/customers", async (req, res) => {
   const [rows] = await db.query(`

@@ -17,8 +17,10 @@ import LoginPage       from "@/app/pages/LoginPage";
 import RegisterPage    from "@/app/pages/RegisterPage";
 import AccountPage     from "@/app/pages/AccountPage";
 import OrdersPage      from "@/app/pages/OrdersPage";
+import OrderDetailPage from "@/app/pages/OrderDetailPage";
 import WishlistPage    from "@/app/pages/WishlistPage";
 import ProfilePage     from "@/app/pages/ProfilePage";
+import NotFoundPage    from "@/app/pages/NotFoundPage";
 
 import AdminLayout     from "@/app/pages/admin/AdminLayout";
 import DashboardPage   from "@/app/pages/admin/DashboardPage";
@@ -72,6 +74,7 @@ function AppRoutes() {
       <Route path="/checkout"        element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
       <Route path="/account"          element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
       <Route path="/account/orders"   element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+      <Route path="/account/orders/:orderNumber" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
       <Route path="/account/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
       <Route path="/account/profile"  element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
@@ -83,6 +86,8 @@ function AppRoutes() {
         <Route path="orders"            element={<AdminOrders />} />
         <Route path="customers"         element={<AdminCustomers />} />
       </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
     </>
   );

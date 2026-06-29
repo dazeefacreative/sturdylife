@@ -1,0 +1,103 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Plus, Pencil, EyeOff } from "lucide-react";
+import api from "@/lib/api";
+import { Reveal } from "@/app/components/motion/Reveal";
+import { MotionLink, MotionButton, ghostHoverVariants, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
+
+const addButtonVariants = {
+  rest: { backgroundColor: "var(--foreground)" },
+  hover: { backgroundColor: "rgba(var(--action-rgb), 0.8)" },
+};
+
+const rowVariants = {
+  rest: { backgroundColor: "rgba(0,0,0,0)" },
+  hover: { backgroundColor: "var(--secondary)" },
+};
+
+const dangerHoverVariants = {
+  rest: { color: "var(--muted-foreground)" },
+  hover: { color: "#0a0a0a" },
+};
+
+export default function AdminProductsPage() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading]   = useState(true);
+
+  const load = () => {
+    api.get("/products", { params: { limit: 50 } })
+      .then(({ data }) => setProducts(data.products))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const toggleActive = async (id: number, current: boolean) => {
+    await api.put(`/products/${id}`, { is_active: current ? 0 : 1 });
+    load();
+  };
+
+  return (
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-black" style={{ fontFamily: "'Fraunces', serif" }}>Products</h1>
+          <p className="text-muted-foreground text-xs tracking-widest uppercase mt-1">{products.length} active</p>
+        </div>
+        <MotionLink to="/admin/products/new"
+          initial="rest" whileHover="hover" whileTap={tapScale} variants={addButtonVariants}
+          className="flex items-center gap-2 text-primary-foreground px-5 py-2.5 text-xs tracking-widest uppercase font-semibold">
+          <Plus size={14} /> Add Product
+        </MotionLink>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[...Array(6)].map((_, i) => <div key={i} className="h-16 bg-secondary animate-pulse" />)}
+        </div>
+      ) : (
+        <Reveal>
+          <div className="border border-border">
+            <div className="grid grid-cols-[64px_1fr_120px_80px_100px_80px] gap-4 px-5 py-3 border-b border-border bg-secondary">
+              {["", "Product", "Category", "Price", "Tag", ""].map((h, i) => (
+                <p key={i} className="text-[10px] tracking-widest uppercase text-muted-foreground font-bold">{h}</p>
+              ))}
+            </div>
+
+            {products.map((p) => (
+              <motion.div key={p.id}
+                initial="rest" whileHover="hover" variants={rowVariants} transition={{ duration: 0.2 }}
+                className="grid grid-cols-[64px_1fr_120px_80px_100px_80px] gap-4 px-5 py-3 border-b border-border last:border-0 items-center">
+                <div className="w-12 h-14 bg-secondary overflow-hidden shrink-0">
+                  {p.image && <img src={p.image} alt={p.name} className="w-full h-full object-cover" />}
+                </div>
+                <div>
+                  <p className="text-sm font-medium leading-snug">{p.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{p.slug}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">{p.category || "—"}</p>
+                <p className="text-xs font-semibold">₦{Number(p.price).toLocaleString()}</p>
+                <span>
+                  {p.tag ? (
+                    <span className="text-[10px] tracking-widest uppercase border border-border px-2 py-0.5">{p.tag}</span>
+                  ) : <span className="text-muted-foreground">—</span>}
+                </span>
+                <div className="flex items-center gap-3">
+                  <MotionLink to={`/admin/products/${p.id}/edit`}
+                    initial="rest" whileHover="hover" whileTap={tapScaleSm} variants={ghostHoverVariants}>
+                    <Pencil size={14} />
+                  </MotionLink>
+                  <MotionButton onClick={() => toggleActive(p.id, true)}
+                    title="Deactivate"
+                    initial="rest" whileHover="hover" whileTap={tapScaleSm} variants={dangerHoverVariants}>
+                    <EyeOff size={14} />
+                  </MotionButton>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </Reveal>
+      )}
+    </div>
+  );
+}

@@ -15,10 +15,6 @@ const thumbRest = { borderColor: "rgba(0,0,0,0)" };
 const thumbHover = { borderColor: "var(--border)" };
 const thumbActive = { borderColor: "var(--foreground)" };
 
-const sizeRestUnselected = { backgroundColor: "rgba(0,0,0,0)", color: "#0f172a", borderColor: "#cbd5e1" };
-const sizeHover = { backgroundColor: "var(--action)", color: "var(--action-foreground)", borderColor: "var(--action-border)" };
-const sizeSelected = { backgroundColor: "#0f172a", color: "#ffffff", borderColor: "#0f172a" };
-
 const addToBagVariants = {
   rest: { backgroundColor: "#0a0a0a" },
   hover: { backgroundColor: "rgba(10,10,10,0.8)" },
@@ -190,12 +186,12 @@ export default function ProductPage() {
                   const isSelected = selectedSize === s.size;
                   return (
                     <motion.button key={s.size} onClick={() => { setSelectedSize(s.size); setSizeError(false); }}
-                      initial={false}
-                      animate={isSelected ? sizeSelected : sizeRestUnselected}
-                      whileHover={isSelected ? undefined : sizeHover}
                       whileTap={tapScaleSm}
-                      transition={{ duration: 0.2 }}
-                      className="w-12 h-12 border text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-slate-400/40">
+                      className={`w-12 h-12 border text-xs font-medium rounded transition-colors duration-100 focus:outline-none focus:ring-2 focus:ring-slate-400/40 ${
+                        isSelected
+                          ? "bg-[#0f172a] text-white border-[#0f172a]"
+                          : "bg-transparent text-[#0f172a] border-slate-300 hover:bg-[var(--action)] hover:text-[var(--action-foreground)] hover:border-[var(--action-border)]"
+                      }`}>
                       {s.size}
                     </motion.button>
                   );
@@ -270,13 +266,15 @@ export default function ProductPage() {
                     <motion.img
                       src={getImageUrl(p.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
                       alt={p.name}
-                      variants={{ rest: { filter: "grayscale(1)", scale: 1 }, hover: { filter: "grayscale(0)", scale: 1.05 } }}
+                      variants={{ rest: { scale: 1 }, hover: { scale: 1.05 } }}
                       transition={{ duration: 0.7 }}
                       className="absolute inset-0 w-full h-full object-cover" />
                   </div>
-                  <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">{p.category}</p>
-                  <h3 className="text-sm font-medium leading-snug">{p.name}</h3>
-                  <p className="text-sm font-semibold mt-1">₦{Number(p.price).toLocaleString()}</p>
+                  <h3 className="text-sm font-medium leading-snug mb-1">{p.name}</h3>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[10px] tracking-widest uppercase text-muted-foreground">{p.category}</p>
+                    <p className="text-sm font-semibold shrink-0">₦{Number(p.price).toLocaleString()}</p>
+                  </div>
                 </MotionLink>
               ))}
             </div>

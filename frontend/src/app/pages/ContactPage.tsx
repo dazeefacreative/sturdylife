@@ -11,7 +11,6 @@ import { useDocumentTitle } from "@/lib/useDocumentTitle";
 const channels = [
   { icon: Mail, label: "Email", value: "sturdylifer@outlook.com", href: "mailto:sturdylifer@outlook.com" },
   { icon: Phone, label: "Phone", value: "+234 906 848 5558", href: "tel:+2349068485558" },
-  { icon: MapPin, label: "Studio", value: "12 Adeola Odeku St, Victoria Island, Lagos", href: undefined },
 ];
 
 const channelLinkVariants = {

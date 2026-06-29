@@ -49,13 +49,8 @@ const categoryImageVariants = {
 };
 
 const productImageVariants = {
-  rest: { filter: "grayscale(1)", scale: 1 },
-  hover: { filter: "grayscale(0)", scale: 1.05 },
-};
-
-const wishlistVariants = {
-  rest: { opacity: 0 },
-  hover: { opacity: 1 },
+  rest: { scale: 1 },
+  hover: { scale: 1.05 },
 };
 
 const addToBagVariants = {
@@ -238,7 +233,7 @@ export default function HomePage() {
           </Reveal>
 
           {loadingProducts ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-10">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-[4/5] bg-secondary mb-4" />
@@ -249,14 +244,14 @@ export default function HomePage() {
             </div>
           ) : (
             <Reveal delay={0.1} y={32}>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-10">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10">
                 {products.map((product) => (
                   <motion.div key={product.id}
                     initial="rest" whileHover="hover"
-                    className="cursor-pointer"
+                    className="cursor-pointer group"
                     onClick={() => navigate(`/product/${product.slug}`)}>
                     <div className="relative overflow-hidden bg-secondary aspect-[4/5] mb-4">
-                      <motion.img src={getImageUrl(product.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
+                      <motion.img src={getImageUrl(product.image)}
                         alt={product.name}
                         variants={productImageVariants}
                         transition={{ duration: 0.7 }}
@@ -267,8 +262,6 @@ export default function HomePage() {
                         </span>
                       )}
                       <motion.button
-                        variants={wishlistVariants}
-                        animate={wishlist.includes(product.id) ? { opacity: 1 } : undefined}
                         whileTap={tapScaleSm}
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
                         className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center">
@@ -282,11 +275,9 @@ export default function HomePage() {
                         <Plus size={12} strokeWidth={2} /> Add to bag
                       </motion.div>
                     </div>
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">{product.category}</p>
-                        <h3 className="text-sm font-medium leading-snug">{product.name}</h3>
-                      </div>
+                    <h3 className="text-sm font-medium leading-snug mb-1">{product.name}</h3>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[10px] tracking-widest uppercase text-muted-foreground">{product.category}</p>
                       <p className="text-sm font-semibold shrink-0">₦{Number(product.price).toLocaleString()}</p>
                     </div>
                   </motion.div>

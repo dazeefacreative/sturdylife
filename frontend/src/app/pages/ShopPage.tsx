@@ -9,6 +9,8 @@ import { useAuth } from "@/app/context/AuthContext";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, MotionButton, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { SiteHeader } from "@/app/components/layout/SiteHeader";
+import { SiteFooter } from "@/app/components/layout/SiteFooter";
 
 const CATEGORIES = [
   { label: "All",        slug: "" },
@@ -38,13 +40,8 @@ const ghostLinkVariants = {
 };
 
 const imageVariants = {
-  rest: { filter: "grayscale(1)", scale: 1 },
-  hover: { filter: "grayscale(0)", scale: 1.05 },
-};
-
-const wishlistVariants = {
-  rest: { opacity: 0 },
-  hover: { opacity: 1 },
+  rest: { scale: 1 },
+  hover: { scale: 1.05 },
 };
 
 const addToBagVariants = {
@@ -125,7 +122,9 @@ export default function ShopPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: "'Barlow', sans-serif" }}>
+    <>
+    <SiteHeader/>
+    <div className="min-h-screen bg-background mb-12" style={{ fontFamily: "'Barlow', sans-serif" }}>
       {/* Page header */}
       <div className="border-b border-border">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-10">
@@ -240,7 +239,7 @@ export default function ShopPage() {
               {products.map((product) => (
                 <MotionLink key={product.id} to={`/product/${product.slug}`}
                   initial="rest" whileHover="hover"
-                  className="cursor-pointer block">
+                  className="cursor-pointer block group">
                   <div className="relative overflow-hidden bg-secondary aspect-[4/5] mb-4">
                     <motion.img
                       src={getImageUrl(product.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
@@ -255,8 +254,6 @@ export default function ShopPage() {
                       </span>
                     )}
                     <motion.button onClick={(e) => toggleWishlist(e, product.id)}
-                      variants={wishlistVariants}
-                      animate={wishlist.includes(product.id) ? { opacity: 1 } : undefined}
                       whileTap={tapScaleSm}
                       className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center">
                       <Heart size={16} strokeWidth={1.5} className={wishlist.includes(product.id) ? "fill-white stroke-white" : "stroke-white"} />
@@ -268,11 +265,9 @@ export default function ShopPage() {
                       <Plus size={12} strokeWidth={2} /> Add to bag
                     </motion.div>
                   </div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">{product.category}</p>
-                      <h3 className="text-sm font-medium leading-snug">{product.name}</h3>
-                    </div>
+                  <h3 className="text-sm font-medium leading-snug mb-1">{product.name}</h3>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[10px] tracking-widest uppercase text-muted-foreground">{product.category}</p>
                     <p className="text-sm font-semibold shrink-0">₦{Number(product.price).toLocaleString()}</p>
                   </div>
                 </MotionLink>
@@ -294,5 +289,7 @@ export default function ShopPage() {
         )}
       </div>
     </div>
+    <SiteFooter/>
+    </>
   );
 }

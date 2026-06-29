@@ -4,6 +4,7 @@ import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { SiteFooter } from "@/app/components/layout/SiteFooter";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const values = [
   { title: "Construction first", body: "Reinforced seams, heavyweight cotton, full-grain leather - every piece is built to be worn for a decade, not a season." },
@@ -24,6 +25,7 @@ const ctaButtonVariants = {
 };
 
 export default function AboutPage() {
+  useDocumentTitle("About", "Menswear built for the long haul. Learn what Sturdy Life stands for.");
   return (
     <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: "'Barlow', sans-serif" }}>
       <SiteHeader />

@@ -8,6 +8,7 @@ import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, MotionButton, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const CATEGORIES = [
   { label: "All",        slug: "" },
@@ -75,6 +76,7 @@ export default function ShopPage() {
 
   const activeCategory = categoryParam || "";
   const activeLabel = CATEGORY_LABELS[activeCategory] || "All Products";
+  useDocumentTitle(activeLabel, "Shop the full Sturdy Life collection — hoodies, beanie caps, and shirts built to last.");
 
   useEffect(() => {
     const paramSearch = searchParams.get("search") || "";

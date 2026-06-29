@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
 import { MotionLink, MotionButton, fadeHoverVariants, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const solidButtonVariants = {
   rest: { backgroundColor: "var(--foreground)" },
@@ -11,6 +12,7 @@ const solidButtonVariants = {
 };
 
 export default function RegisterPage() {
+  useDocumentTitle("Create Account");
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ first_name: "", last_name: "", email: "", password: "", phone: "" });

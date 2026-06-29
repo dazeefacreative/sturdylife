@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import { getImageUrl } from "@/lib/media";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, MotionButton, ghostHoverVariants, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const addButtonVariants = {
   rest: { backgroundColor: "var(--foreground)" },
@@ -22,6 +23,7 @@ const dangerHoverVariants = {
 };
 
 export default function AdminProductsPage() {
+  useDocumentTitle("Admin · Products");
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading]   = useState(true);
 

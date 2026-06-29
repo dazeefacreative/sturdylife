@@ -9,6 +9,7 @@ import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { SiteFooter } from "@/app/components/layout/SiteFooter";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, MotionButton, ghostHoverVariants, arrowShiftVariants, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const outlineButtonVariants = {
   rest: { backgroundColor: "rgba(0,0,0,0)", color: "var(--foreground)" },
@@ -16,6 +17,7 @@ const outlineButtonVariants = {
 };
 
 export default function WishlistPage() {
+  useDocumentTitle("My Wishlist");
   const navigate = useNavigate();
   const { addItem } = useCart();
   const [items, setItems] = useState<any[]>([]);

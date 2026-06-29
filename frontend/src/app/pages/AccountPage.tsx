@@ -6,6 +6,7 @@ import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { SiteFooter } from "@/app/components/layout/SiteFooter";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, MotionButton, ghostHoverVariants, tapScaleSm } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const cardVariants = {
   rest: { borderColor: "var(--border)" },
@@ -18,6 +19,7 @@ const iconVariants = {
 };
 
 export default function AccountPage() {
+  useDocumentTitle("My Account");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import api from "@/lib/api";
 import { Reveal } from "@/app/components/motion/Reveal";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const rowVariants = {
   rest: { backgroundColor: "rgba(0,0,0,0)" },
@@ -9,6 +10,7 @@ const rowVariants = {
 };
 
 export default function AdminCustomersPage() {
+  useDocumentTitle("Admin · Customers");
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

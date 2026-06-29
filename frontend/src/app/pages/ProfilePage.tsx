@@ -5,6 +5,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { SiteFooter } from "@/app/components/layout/SiteFooter";
 import { MotionLink, MotionButton, ghostHoverVariants, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const solidButtonVariants = {
   rest: { backgroundColor: "#0a0a0a" },
@@ -12,6 +13,7 @@ const solidButtonVariants = {
 };
 
 export default function ProfilePage() {
+  useDocumentTitle("My Profile");
   const { user, updateProfile, changePassword } = useAuth();
 
   const [profileForm, setProfileForm] = useState({

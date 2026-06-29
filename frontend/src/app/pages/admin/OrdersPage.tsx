@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import api from "@/lib/api";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionButton, tapScaleSm } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const STATUSES = ["pending","paid","processing","shipped","delivered","cancelled","refunded"];
 const STATUS_STYLES: Record<string, string> = {
@@ -20,6 +21,7 @@ const rowVariants = {
 };
 
 export default function AdminOrdersPage() {
+  useDocumentTitle("Admin · Orders");
   const [orders, setOrders]       = useState<any[]>([]);
   const [loading, setLoading]     = useState(true);
   const [filterStatus, setFilter] = useState("");

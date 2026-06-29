@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "@/lib/api";
-import { MotionButton, tapScale } from "@/app/components/motion/primitives";
+import { getImageUrl } from "@/lib/media";
+import { MotionButton, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const cancelButtonVariants = {
   rest: { backgroundColor: "rgba(0,0,0,0)" },
@@ -23,11 +25,13 @@ const uploadLabelVariants = {
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
 interface SizeStock { size: string; stock: number; }
+interface ExistingImage { id: number; image_url: string; is_primary: boolean | number; }
 
 export default function ProductFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = !!id;
+  useDocumentTitle(isEdit ? "Admin · Edit Product" : "Admin · Add Product");
 
   const [form, setForm] = useState({
     name: "", description: "", price: "", category_id: "", tag: "", is_active: true,
@@ -36,7 +40,8 @@ export default function ProductFormPage() {
     SIZES.map((size) => ({ size, stock: 0 }))
   );
   const [images, setImages] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -56,16 +61,28 @@ export default function ProductFormPage() {
             return { size: s, stock: existing?.stock_quantity || 0 };
           }));
         }
-        if (data.images) setPreviews(data.images.map((img: any) => img.image_url));
+        if (data.images) setExistingImages(data.images);
       });
     }
   }, [id]);
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
-    const arr = Array.from(files).slice(0, 8);
-    setImages(arr);
-    setPreviews(arr.map((f) => URL.createObjectURL(f)));
+    const remainingSlots = Math.max(0, 8 - existingImages.length - images.length);
+    const arr = Array.from(files).slice(0, remainingSlots);
+    setImages((prev) => [...prev, ...arr]);
+    setNewPreviews((prev) => [...prev, ...arr.map((f) => URL.createObjectURL(f))]);
+  };
+
+  const removeExistingImage = async (imageId: number) => {
+    if (!id) return;
+    await api.delete(`/products/${id}/images/${imageId}`);
+    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+  };
+
+  const removeNewImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setNewPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const setStock = (size: string, stock: number) =>
@@ -169,16 +186,36 @@ export default function ProductFormPage() {
             <input type="file" multiple accept="image/*" className="hidden"
               onChange={(e) => handleFiles(e.target.files)} />
           </motion.label>
-          {previews.length > 0 && (
+          {(existingImages.length > 0 || newPreviews.length > 0) && (
             <div className="grid grid-cols-4 gap-2 mt-4">
-              {previews.map((src, i) => (
-                <div key={i} className="relative aspect-[4/5] bg-muted overflow-hidden">
-                  <img src={src} alt="" className="w-full h-full object-cover" />
-                  {i === 0 && (
+              {existingImages.map((img) => (
+                <div key={img.id} className="relative aspect-[4/5] bg-muted overflow-hidden group">
+                  <img src={getImageUrl(img.image_url)} alt="" className="w-full h-full object-cover" />
+                  {!!img.is_primary && (
                     <span className="absolute bottom-1 left-1 bg-foreground text-primary-foreground text-[9px] px-1.5 py-0.5 tracking-widest uppercase">
                       Primary
                     </span>
                   )}
+                  <MotionButton type="button" onClick={() => removeExistingImage(img.id)}
+                    whileTap={tapScaleSm}
+                    className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/60 text-white">
+                    <X size={12} />
+                  </MotionButton>
+                </div>
+              ))}
+              {newPreviews.map((src, i) => (
+                <div key={i} className="relative aspect-[4/5] bg-muted overflow-hidden">
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                  {existingImages.length === 0 && i === 0 && (
+                    <span className="absolute bottom-1 left-1 bg-foreground text-primary-foreground text-[9px] px-1.5 py-0.5 tracking-widest uppercase">
+                      Primary
+                    </span>
+                  )}
+                  <MotionButton type="button" onClick={() => removeNewImage(i)}
+                    whileTap={tapScaleSm}
+                    className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/60 text-white">
+                    <X size={12} />
+                  </MotionButton>
                 </div>
               ))}
             </div>

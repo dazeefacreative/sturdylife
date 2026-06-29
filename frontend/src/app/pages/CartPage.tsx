@@ -6,6 +6,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { getImageUrl } from "@/lib/media";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { MotionLink, MotionButton, ghostHoverVariants, arrowShiftVariants, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const solidButtonVariants = {
   rest: { backgroundColor: "var(--foreground)" },
@@ -13,6 +14,7 @@ const solidButtonVariants = {
 };
 
 export default function CartPage() {
+  useDocumentTitle("Your Bag");
   const { items, subtotal, updateQuantity, removeItem } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();

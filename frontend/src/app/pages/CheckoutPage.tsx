@@ -7,6 +7,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/media";
 import { MotionButton, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const outlineButtonVariants = {
   rest: { backgroundColor: "rgba(0,0,0,0)", color: "var(--foreground)" },
@@ -19,6 +20,7 @@ const solidButtonVariants = {
 };
 
 export default function CheckoutPage() {
+  useDocumentTitle("Checkout");
   const { items, subtotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();

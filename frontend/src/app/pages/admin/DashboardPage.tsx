@@ -4,6 +4,7 @@ import { TrendingUp, ShoppingBag, Users, Package } from "lucide-react";
 import api from "@/lib/api";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, ghostHoverVariants } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const STATUS_STYLES: Record<string, string> = {
   pending:    "text-yellow-600",
@@ -20,6 +21,7 @@ const rowVariants = {
 };
 
 export default function DashboardPage() {
+  useDocumentTitle("Admin · Dashboard");
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 

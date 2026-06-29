@@ -6,6 +6,7 @@ import { SiteFooter } from "@/app/components/layout/SiteFooter";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionA, MotionButton, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
 import api from "@/lib/api";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const channels = [
   { icon: Mail, label: "Email", value: "sturdylifer@outlook.com", href: "mailto:sturdylifer@outlook.com" },
@@ -24,6 +25,7 @@ const submitButtonVariants = {
 };
 
 export default function ContactPage() {
+  useDocumentTitle("Contact", "Questions about an order or a wholesale inquiry? Get in touch with Sturdy Life.");
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);

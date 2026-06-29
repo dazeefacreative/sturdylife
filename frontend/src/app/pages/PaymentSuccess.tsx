@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import api from "@/lib/api";
 import { MotionLink, ghostHoverVariants, tapScale } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const outlineButtonVariants = {
   rest: { backgroundColor: "rgba(0,0,0,0)", color: "var(--foreground)" },
@@ -17,6 +18,7 @@ const solidButtonVariants = {
 };
 
 export function PaymentSuccess() {
+  useDocumentTitle("Order Confirmation");
   const [params] = useSearchParams();
   const ref = params.get("ref") || params.get("reference") || "";
   const [status, setStatus] = useState<"verifying" | "paid" | "failed">("verifying");
@@ -77,9 +79,9 @@ export function PaymentSuccess() {
         Continue Shopping
       </MotionLink>
       {order?.user_id && (
-        <MotionLink to="/account/orders" initial="rest" whileHover="hover" variants={ghostHoverVariants}
+        <MotionLink to={`/account/orders/${order.order_number}`} initial="rest" whileHover="hover" variants={ghostHoverVariants}
           className="text-xs underline underline-offset-2">
-          View all orders
+          View order details
         </MotionLink>
       )}
     </div>

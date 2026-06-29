@@ -1,4 +1,5 @@
 import { MotionLink, tapScale } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const solidButtonVariants = {
   rest: { backgroundColor: "var(--foreground)" },
@@ -11,6 +12,7 @@ const outlineButtonVariants = {
 };
 
 export default function PaymentFailed() {
+  useDocumentTitle("Payment Cancelled");
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 text-center px-6"
       style={{ fontFamily: "'Barlow', sans-serif" }}>

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import api from "@/lib/api";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { SiteFooter } from "@/app/components/layout/SiteFooter";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, ghostHoverVariants, tapScale } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const STATUS_STYLES: Record<string, string> = {
   pending:    "bg-yellow-50  text-yellow-700 border-yellow-200",
@@ -27,6 +27,7 @@ const rowVariants = {
 };
 
 export default function OrdersPage() {
+  useDocumentTitle("My Orders");
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -73,9 +74,9 @@ export default function OrdersPage() {
               </div>
 
               {orders.map((order) => (
-                <motion.div key={order.id}
+                <MotionLink key={order.id} to={`/account/orders/${order.order_number}`}
                   initial="rest" whileHover="hover" variants={rowVariants} transition={{ duration: 0.2 }}
-                  className="grid md:grid-cols-[1fr_120px_120px_120px] gap-4 py-4 px-2 border-b border-border items-center">
+                  className="grid md:grid-cols-[1fr_120px_120px_120px] gap-4 py-4 px-2 border-b border-border items-center cursor-pointer">
                   <div>
                     <p className="text-sm font-medium">{order.order_number}</p>
                   </div>
@@ -86,7 +87,7 @@ export default function OrdersPage() {
                   <span className={`text-[10px] tracking-widest uppercase border px-2 py-1 w-fit font-medium ${STATUS_STYLES[order.status] || ""}`}>
                     {order.status}
                   </span>
-                </motion.div>
+                </MotionLink>
               ))}
             </div>
           </Reveal>

@@ -131,7 +131,7 @@ export default function HomePage() {
           playsInline
           className="absolute inset-0 w-full h-full object-cover object-top origin-top"
         >
-          <source src="/videos/hero-loop.mp4" type="video/mp4" />
+          <source src="/videos/hero-loop.webm" type="video/webm" />
         </motion.video>
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-end px-8 md:px-20 pb-16 md:pb-24">

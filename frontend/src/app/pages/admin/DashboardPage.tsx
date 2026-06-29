@@ -37,7 +37,7 @@ export default function DashboardPage() {
   ] : [];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-black" style={{ fontFamily: "'Fraunces', serif" }}>Dashboard</h1>
         <p className="text-muted-foreground text-xs tracking-widest uppercase mt-1">Store overview</p>
@@ -73,27 +73,29 @@ export default function DashboardPage() {
               View all →
             </MotionLink>
           </div>
-          <div className="border border-border">
-            <div className="grid grid-cols-[1fr_140px_100px_100px] gap-4 px-5 py-3 border-b border-border bg-secondary">
-              {["Order / Customer", "Email", "Total", "Status"].map((h) => (
-                <p key={h} className="text-[10px] tracking-widest uppercase text-muted-foreground font-bold">{h}</p>
+          <div className="border border-border overflow-x-auto">
+            <div className="min-w-[560px]">
+              <div className="grid grid-cols-[1fr_140px_100px_100px] gap-4 px-5 py-3 border-b border-border bg-secondary">
+                {["Order / Customer", "Email", "Total", "Status"].map((h) => (
+                  <p key={h} className="text-[10px] tracking-widest uppercase text-muted-foreground font-bold">{h}</p>
+                ))}
+              </div>
+              {stats?.recentOrders?.map((o: any) => (
+                <motion.div key={o.order_number}
+                  initial="rest" whileHover="hover" variants={rowVariants} transition={{ duration: 0.2 }}
+                  className="grid grid-cols-[1fr_140px_100px_100px] gap-4 px-5 py-3 border-b border-border last:border-0 items-center">
+                  <div>
+                    <p className="text-xs font-medium">{o.order_number}</p>
+                    <p className="text-[10px] text-muted-foreground">{o.first_name} {o.last_name}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{o.email}</p>
+                  <p className="text-xs font-semibold">₦{Number(o.total).toLocaleString()}</p>
+                  <span className={`text-[10px] tracking-widest uppercase font-medium ${STATUS_STYLES[o.status] || ""}`}>
+                    {o.status}
+                  </span>
+                </motion.div>
               ))}
             </div>
-            {stats?.recentOrders?.map((o: any) => (
-              <motion.div key={o.order_number}
-                initial="rest" whileHover="hover" variants={rowVariants} transition={{ duration: 0.2 }}
-                className="grid grid-cols-[1fr_140px_100px_100px] gap-4 px-5 py-3 border-b border-border last:border-0 items-center">
-                <div>
-                  <p className="text-xs font-medium">{o.order_number}</p>
-                  <p className="text-[10px] text-muted-foreground">{o.first_name} {o.last_name}</p>
-                </div>
-                <p className="text-xs text-muted-foreground truncate">{o.email}</p>
-                <p className="text-xs font-semibold">₦{Number(o.total).toLocaleString()}</p>
-                <span className={`text-[10px] tracking-widest uppercase font-medium ${STATUS_STYLES[o.status] || ""}`}>
-                  {o.status}
-                </span>
-              </motion.div>
-            ))}
           </div>
         </div>
       </Reveal>

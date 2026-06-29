@@ -114,7 +114,7 @@ export default function ProductFormPage() {
   const inputCls = "border border-border px-4 py-3 text-sm bg-transparent w-full focus:outline-none focus:border-foreground transition-colors";
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-6">
+    <div className="max-w-3xl mx-auto py-6 md:py-10 px-4 md:px-6">
       <h1 className="text-2xl font-black mb-8" style={{ fontFamily: "'Fraunces', serif" }}>
         {isEdit ? "Edit Product" : "Add New Product"}
       </h1>
@@ -132,7 +132,7 @@ export default function ProductFormPage() {
             <textarea rows={4} placeholder="Description" value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               className={`${inputCls} resize-none`} />
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <input required type="number" placeholder="Price (₦)" value={form.price}
                 onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
                 className={inputCls} />
@@ -187,7 +187,7 @@ export default function ProductFormPage() {
               onChange={(e) => handleFiles(e.target.files)} />
           </motion.label>
           {(existingImages.length > 0 || newPreviews.length > 0) && (
-            <div className="grid grid-cols-4 gap-2 mt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
               {existingImages.map((img) => (
                 <div key={img.id} className="relative aspect-[4/5] bg-muted overflow-hidden group">
                   <img src={getImageUrl(img.image_url)} alt="" className="w-full h-full object-cover" />

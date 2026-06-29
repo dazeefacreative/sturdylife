@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router";
-import { LayoutDashboard, Package, ShoppingBag, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
 import { MotionButton, tapScaleSm } from "@/app/components/motion/primitives";
@@ -18,17 +19,37 @@ const itemActive = { backgroundColor: "var(--foreground)", color: "var(--primary
 export default function AdminLayout() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen flex bg-background" style={{ fontFamily: "'Barlow', sans-serif" }}>
+      {/* Mobile topbar */}
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 border-b border-border bg-background">
+        <div>
+          <p className="text-[9px] tracking-widest uppercase text-muted-foreground leading-none">Sturdy Life</p>
+          <p className="text-xs font-bold tracking-wide uppercase leading-none mt-0.5">Admin</p>
+        </div>
+        <motion.button whileTap={tapScaleSm} onClick={() => setMenuOpen((v) => !v)} aria-label="Toggle menu">
+          {menuOpen ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
+        </motion.button>
+      </div>
+
+      {/* Backdrop */}
+      {menuOpen && (
+        <div className="md:hidden fixed inset-0 z-30 bg-black/40" onClick={() => setMenuOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 border-r border-border flex flex-col py-8 px-4">
+      <aside className={`w-56 shrink-0 border-r border-border flex flex-col py-8 px-4 bg-background
+        fixed inset-y-0 left-0 z-40 transition-transform duration-200
+        ${menuOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:static`}>
         <div className="mb-10 px-2">
           <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">Sturdy Life</p>
           <p className="text-xs font-bold tracking-wide uppercase">Admin</p>
         </div>
         <nav className="flex-1 space-y-1">
           {nav.map(({ to, label, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} className="block">
+            <NavLink key={to} to={to} end={end} className="block" onClick={() => setMenuOpen(false)}>
               {({ isActive }) => (
                 <motion.div
                   initial={false}
@@ -52,7 +73,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pt-14 md:pt-0">
         <Outlet />
       </main>
     </div>

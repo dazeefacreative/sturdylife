@@ -148,6 +148,21 @@ export function SiteHeader() {
                   {link.label}
                 </MotionLink>
               ))}
+              {user ? (
+                <MotionLink to={user.role === "admin" ? "/admin" : "/account"}
+                  whileTap={tapScaleSm}
+                  className="text-sm tracking-widest uppercase text-foreground border-b border-border pb-4"
+                  onClick={() => setMenuOpen(false)}>
+                  {user.first_name}
+                </MotionLink>
+              ) : (
+                <MotionLink to="/login"
+                  whileTap={tapScaleSm}
+                  className="text-sm tracking-widest uppercase text-foreground border-b border-border pb-4"
+                  onClick={() => setMenuOpen(false)}>
+                  Login
+                </MotionLink>
+              )}
             </nav>
           </div>
         )}

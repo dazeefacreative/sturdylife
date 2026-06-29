@@ -44,25 +44,33 @@ export default function ProductFormPage() {
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingProduct, setLoadingProduct] = useState(isEdit);
   const [error, setError] = useState("");
 
   useEffect(() => {
     api.get("/categories").then(({ data }) => setCategories(data));
     if (isEdit) {
       // Load existing product - fetch by id via admin endpoint
-      api.get(`/admin/products/${id}`).then(({ data }) => {
-        setForm({
-          name: data.name, description: data.description, price: data.price,
-          category_id: data.category_id, tag: data.tag || "", is_active: data.is_active,
-        });
-        if (data.sizes) {
-          setSizes(SIZES.map((s) => {
-            const existing = data.sizes.find((x: any) => x.size === s);
-            return { size: s, stock: existing?.stock_quantity || 0 };
-          }));
-        }
-        if (data.images) setExistingImages(data.images);
-      });
+      api.get(`/admin/products/${id}`)
+        .then(({ data }) => {
+          setForm({
+            name: data.name ?? "",
+            description: data.description ?? "",
+            price: data.price ?? "",
+            category_id: data.category_id ?? "",
+            tag: data.tag ?? "",
+            is_active: !!data.is_active,
+          });
+          if (data.sizes) {
+            setSizes(SIZES.map((s) => {
+              const existing = data.sizes.find((x: any) => x.size === s);
+              return { size: s, stock: existing?.stock_quantity || 0 };
+            }));
+          }
+          if (data.images) setExistingImages(data.images);
+        })
+        .catch((err) => setError(err.response?.data?.error || "Failed to load product"))
+        .finally(() => setLoadingProduct(false));
     }
   }, [id]);
 
@@ -119,6 +127,13 @@ export default function ProductFormPage() {
         {isEdit ? "Edit Product" : "Add New Product"}
       </h1>
 
+      {error && <p className="text-red-500 text-sm mb-6">{error}</p>}
+
+      {loadingProduct ? (
+        <div className="space-y-4">
+          {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-secondary animate-pulse" />)}
+        </div>
+      ) : (
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic info */}
         <section>
@@ -230,8 +245,6 @@ export default function ProductFormPage() {
           <label htmlFor="active" className="text-sm">Product is active and visible in store</label>
         </div>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
         <div className="flex gap-4">
           <MotionButton type="button" onClick={() => navigate("/admin/products")}
             initial="rest" whileHover="hover" whileTap={tapScale} variants={cancelButtonVariants}
@@ -246,6 +259,7 @@ export default function ProductFormPage() {
           </MotionButton>
         </div>
       </form>
+      )}
     </div>
   );
 }

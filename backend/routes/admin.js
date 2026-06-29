@@ -77,6 +77,20 @@ router.put("/orders/:id/status", async (req, res) => {
   res.json({ message: "Status updated" });
 });
 
+// ─── GET /api/admin/products — full list incl. inactive ──────
+router.get("/products", async (req, res) => {
+  const [products] = await db.query(`
+    SELECT p.id, p.name, p.slug, p.price, p.tag, p.is_active,
+           c.name AS category, c.slug AS category_slug,
+           (SELECT image_url FROM product_images
+            WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
+    FROM products p
+    LEFT JOIN categories c ON c.id = p.category_id
+    ORDER BY p.created_at DESC
+  `);
+  res.json({ products });
+});
+
 // ─── GET /api/admin/products/:id — full product for editing ──
 router.get("/products/:id", async (req, res) => {
   const [[product]] = await db.query(

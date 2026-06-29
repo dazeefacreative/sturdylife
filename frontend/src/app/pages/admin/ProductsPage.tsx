@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Pencil, EyeOff } from "lucide-react";
+import { Plus, Pencil, Eye, EyeOff } from "lucide-react";
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/media";
 import { Reveal } from "@/app/components/motion/Reveal";
@@ -28,7 +28,7 @@ export default function AdminProductsPage() {
   const [loading, setLoading]   = useState(true);
 
   const load = () => {
-    api.get("/products", { params: { limit: 50 } })
+    api.get("/admin/products")
       .then(({ data }) => setProducts(data.products))
       .finally(() => setLoading(false));
   };
@@ -45,7 +45,9 @@ export default function AdminProductsPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap mb-8">
         <div>
           <h1 className="text-2xl font-black" style={{ fontFamily: "'Fraunces', serif" }}>Products</h1>
-          <p className="text-muted-foreground text-xs tracking-widest uppercase mt-1">{products.length} active</p>
+          <p className="text-muted-foreground text-xs tracking-widest uppercase mt-1">
+            {products.filter((p) => p.is_active).length} active · {products.length} total
+          </p>
         </div>
         <MotionLink to="/admin/products/new"
           initial="rest" whileHover="hover" whileTap={tapScale} variants={addButtonVariants}
@@ -71,13 +73,13 @@ export default function AdminProductsPage() {
               {products.map((p) => (
                 <motion.div key={p.id}
                   initial="rest" whileHover="hover" variants={rowVariants} transition={{ duration: 0.2 }}
-                  className="grid grid-cols-[64px_1fr_120px_80px_100px_80px] gap-4 px-5 py-3 border-b border-border last:border-0 items-center">
+                  className={`grid grid-cols-[64px_1fr_120px_80px_100px_80px] gap-4 px-5 py-3 border-b border-border last:border-0 items-center ${!p.is_active ? "opacity-40" : ""}`}>
                   <div className="w-12 h-14 bg-secondary overflow-hidden shrink-0">
                     {p.image && <img src={getImageUrl(p.image)} alt={p.name} className="w-full h-full object-cover" />}
                   </div>
                   <div>
                     <p className="text-sm font-medium leading-snug">{p.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{p.slug}</p>
+                    <p className="text-[10px] text-muted-foreground">{p.slug}{!p.is_active && " · Hidden"}</p>
                   </div>
                   <p className="text-xs text-muted-foreground">{p.category || "—"}</p>
                   <p className="text-xs font-semibold">₦{Number(p.price).toLocaleString()}</p>
@@ -91,10 +93,10 @@ export default function AdminProductsPage() {
                       initial="rest" whileHover="hover" whileTap={tapScaleSm} variants={ghostHoverVariants}>
                       <Pencil size={14} />
                     </MotionLink>
-                    <MotionButton onClick={() => toggleActive(p.id, true)}
-                      title="Deactivate"
+                    <MotionButton onClick={() => toggleActive(p.id, p.is_active)}
+                      title={p.is_active ? "Deactivate" : "Activate"}
                       initial="rest" whileHover="hover" whileTap={tapScaleSm} variants={dangerHoverVariants}>
-                      <EyeOff size={14} />
+                      {p.is_active ? <EyeOff size={14} /> : <Eye size={14} />}
                     </MotionButton>
                   </div>
                 </motion.div>

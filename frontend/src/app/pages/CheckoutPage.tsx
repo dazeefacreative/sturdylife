@@ -201,7 +201,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Shipping</span>
-              <span>{shippingFee === 0 ? "Free" : <>₦{shippingFee}</>}</span>
+              <span>{shippingFee === 0 ? "Free" : <>₦{shippingFee.toLocaleString()}</>}</span>
             </div>
             <div className="flex justify-between text-sm font-bold border-t border-border pt-2 mt-2">
               <span>Total</span>

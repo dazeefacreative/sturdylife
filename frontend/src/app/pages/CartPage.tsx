@@ -114,11 +114,11 @@ export default function CartPage() {
               </div>
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Shipping</span>
-                <span>{shippingFee === 0 ? <span className="text-foreground">Free</span> : <>₦{shippingFee}</>}</span>
+                <span>{shippingFee === 0 ? <span className="text-foreground">Free</span> : <>₦{shippingFee.toLocaleString()}</>}</span>
               </div>
               {shippingFee > 0 && (
                 <p className="text-[10px] text-muted-foreground">
-                  Add ₦{(250000 - subtotal).toFixed(0)} more for free shipping
+                  Add ₦{(250000 - subtotal).toLocaleString()} more for free shipping
                 </p>
               )}
             </div>

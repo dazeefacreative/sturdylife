@@ -39,7 +39,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const count    = items.reduce((a, i) => a + i.quantity, 0);
   const subtotal = items.reduce((a, i) => a + i.price * i.quantity, 0);
 
-  // Load cart on mount / user change
+  // Load cart on mount / user change. Guest cart persistence is handled
+  // explicitly inside each mutation below (not via a reactive effect on
+  // `items`) — an effect keyed on `items` would also fire on this initial
+  // load with the stale pre-load value still in its closure, overwriting
+  // the very data this effect is meant to read.
   useEffect(() => {
     if (user) {
       fetchServerCart();
@@ -49,12 +53,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  // Persist guest cart
-  useEffect(() => {
-    if (!user) {
-      localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
-    }
-  }, [items, user]);
+  const persistGuestCart = (nextItems: CartItem[]) => {
+    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(nextItems));
+  };
 
   const fetchServerCart = async () => {
     try {
@@ -72,16 +73,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       } else {
         setItems((prev) => {
           const existing = prev.find((i) => i.product_id === product_id && i.size === size);
-          if (existing) {
-            return prev.map((i) =>
-              i.product_id === product_id && i.size === size
-                ? { ...i, quantity: i.quantity + quantity }
-                : i
-            );
-          }
-          // For guest, we store minimal info — product details would need a fetch
-          // In practice, pass full product data from ProductPage
-          return prev;
+          const next = existing
+            ? prev.map((i) =>
+                i.product_id === product_id && i.size === size
+                  ? { ...i, quantity: i.quantity + quantity }
+                  : i
+              )
+            // For guest, we store minimal info — product details would need a fetch
+            // In practice, pass full product data from ProductPage
+            : prev;
+          persistGuestCart(next);
+          return next;
         });
       }
       setIsOpen(true);
@@ -95,11 +97,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       await api.put(`/cart/${itemId}`, { quantity });
       await fetchServerCart();
     } else {
-      setItems((prev) =>
-        quantity < 1
+      setItems((prev) => {
+        const next = quantity < 1
           ? prev.filter((i) => i.id !== itemId)
-          : prev.map((i) => (i.id === itemId ? { ...i, quantity } : i))
-      );
+          : prev.map((i) => (i.id === itemId ? { ...i, quantity } : i));
+        persistGuestCart(next);
+        return next;
+      });
     }
   }, [user]);
 
@@ -108,7 +112,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       await api.delete(`/cart/${itemId}`);
       setItems((prev) => prev.filter((i) => i.id !== itemId));
     } else {
-      setItems((prev) => prev.filter((i) => i.id !== itemId));
+      setItems((prev) => {
+        const next = prev.filter((i) => i.id !== itemId);
+        persistGuestCart(next);
+        return next;
+      });
     }
   }, [user]);
 

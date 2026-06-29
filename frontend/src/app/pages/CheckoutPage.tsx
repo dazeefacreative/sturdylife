@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/media";
 import { MotionButton, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
 
 const outlineButtonVariants = {
@@ -24,7 +25,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const shippingFee = subtotal >= 250 ? 0 : 15;
+  const shippingFee = subtotal >= 250000 ? 0 : 2500;
   const total = subtotal + shippingFee;
 
   const [form, setForm] = useState({
@@ -177,7 +178,7 @@ export default function CheckoutPage() {
             {items.map((item) => (
               <div key={`${item.product_id}-${item.size}`} className="flex gap-3">
                 <div className="relative w-14 h-16 bg-muted shrink-0">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" />
                   <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-foreground text-primary-foreground text-[9px] flex items-center justify-center rounded-full">
                     {item.quantity}
                   </span>

@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router";
 import { Heart, Plus, SlidersHorizontal, X } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/media";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { Reveal } from "@/app/components/motion/Reveal";
@@ -240,7 +241,7 @@ export default function ShopPage() {
                   className="cursor-pointer block">
                   <div className="relative overflow-hidden bg-secondary aspect-[4/5] mb-4">
                     <motion.img
-                      src={product.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
+                      src={getImageUrl(product.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
                       alt={product.name}
                       variants={imageVariants}
                       transition={{ duration: 0.7 }}

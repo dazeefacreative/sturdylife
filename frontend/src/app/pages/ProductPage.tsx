@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { Heart, ArrowLeft, Minus, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/media";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
@@ -52,7 +53,7 @@ export default function ProductPage() {
   }, [slug]);
 
   const allImages = product?.images?.length
-    ? product.images.map((img: any) => img.image_url)
+    ? product.images.map((img: any) => getImageUrl(img.image_url))
     : ["https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1000&fit=crop"];
 
   const availableSizes = product?.sizes?.filter((s: any) => s.stock_quantity > 0) || [];

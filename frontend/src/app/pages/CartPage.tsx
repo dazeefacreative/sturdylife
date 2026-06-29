@@ -3,6 +3,7 @@ import { Minus, Plus, X, ShoppingBag, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
+import { getImageUrl } from "@/lib/media";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { MotionLink, MotionButton, ghostHoverVariants, arrowShiftVariants, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
 
@@ -16,7 +17,7 @@ export default function CartPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const shippingFee = subtotal >= 250 ? 0 : 15;
+  const shippingFee = subtotal >= 250000 ? 0 : 2500;
   const total = subtotal + shippingFee;
 
   if (!items.length) {
@@ -58,7 +59,7 @@ export default function CartPage() {
               <div key={item.id} className="flex gap-5 border-b border-border pb-6">
                 <MotionLink to={`/product/${item.slug}`} whileTap={tapScaleSm} className="shrink-0">
                   <div className="w-24 h-32 bg-secondary overflow-hidden">
-                    <img src={item.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop"}
+                    <img src={getImageUrl(item.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop"}
                       alt={item.name} className="w-full h-full object-cover" />
                   </div>
                 </MotionLink>
@@ -115,7 +116,7 @@ export default function CartPage() {
               </div>
               {shippingFee > 0 && (
                 <p className="text-[10px] text-muted-foreground">
-                  Add ₦{(250 - subtotal).toFixed(0)} more for free shipping
+                  Add ₦{(250000 - subtotal).toFixed(0)} more for free shipping
                 </p>
               )}
             </div>

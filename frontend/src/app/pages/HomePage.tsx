@@ -10,6 +10,7 @@ import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/media";
 import beanieCap from "@/imports/beanie caps.jpg";
 import hoodies from "@/imports/hoodies.jpg";
 import shirts from "@/imports/shirts.jpg";
@@ -255,7 +256,7 @@ export default function HomePage() {
                     className="cursor-pointer"
                     onClick={() => navigate(`/product/${product.slug}`)}>
                     <div className="relative overflow-hidden bg-secondary aspect-[4/5] mb-4">
-                      <motion.img src={product.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
+                      <motion.img src={getImageUrl(product.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
                         alt={product.name}
                         variants={productImageVariants}
                         transition={{ duration: 0.7 }}

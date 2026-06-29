@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Plus, Pencil, EyeOff } from "lucide-react";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/media";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, MotionButton, ghostHoverVariants, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
 
@@ -69,7 +70,7 @@ export default function AdminProductsPage() {
                 initial="rest" whileHover="hover" variants={rowVariants} transition={{ duration: 0.2 }}
                 className="grid grid-cols-[64px_1fr_120px_80px_100px_80px] gap-4 px-5 py-3 border-b border-border last:border-0 items-center">
                 <div className="w-12 h-14 bg-secondary overflow-hidden shrink-0">
-                  {p.image && <img src={p.image} alt={p.name} className="w-full h-full object-cover" />}
+                  {p.image && <img src={getImageUrl(p.image)} alt={p.name} className="w-full h-full object-cover" />}
                 </div>
                 <div>
                   <p className="text-sm font-medium leading-snug">{p.name}</p>

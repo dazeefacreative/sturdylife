@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { Heart, Plus, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/media";
 import { useCart } from "@/app/context/CartContext";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { SiteFooter } from "@/app/components/layout/SiteFooter";
@@ -78,7 +79,7 @@ export default function WishlistPage() {
                 <motion.div key={item.product_id} initial="rest" whileHover="hover" className="cursor-pointer"
                   onClick={() => navigate(`/product/${item.slug}`)}>
                   <div className="relative overflow-hidden bg-secondary aspect-[4/5] mb-4">
-                    <img src={item.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
+                    <img src={getImageUrl(item.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
                       alt={item.name} className="absolute inset-0 w-full h-full object-cover" />
                     {item.tag && (
                       <span className="absolute top-3 left-3 bg-foreground text-primary-foreground text-[10px] tracking-widest uppercase px-2 py-1">

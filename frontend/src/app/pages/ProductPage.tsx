@@ -9,6 +9,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
 
 import { MotionLink, MotionButton, ghostHoverVariants, tapScale, tapScaleSm, tapScaleLg } from "@/app/components/motion/primitives";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const thumbRest = { borderColor: "rgba(0,0,0,0)" };
 const thumbHover = { borderColor: "var(--border)" };
@@ -41,6 +42,7 @@ export default function ProductPage() {
   const [wishlisted, setWishlisted] = useState(false);
   const [adding, setAdding]         = useState(false);
   const [sizeError, setSizeError]   = useState(false);
+  const [related, setRelated]       = useState<any[]>([]);
 
   useEffect(() => {
     setLoading(true);
@@ -71,6 +73,13 @@ export default function ProductPage() {
       .catch(() => {});
   }, [user, product]);
 
+  useEffect(() => {
+    if (!product?.category_slug) { setRelated([]); return; }
+    api.get("/products", { params: { category: product.category_slug, limit: 5 } })
+      .then(({ data }) => setRelated(data.products.filter((p: any) => p.id !== product.id).slice(0, 4)))
+      .catch(() => setRelated([]));
+  }, [product]);
+
   const handleAddToCart = async () => {
     if (!selectedSize) { setSizeError(true); return; }
     if (!user) { navigate("/login"); return; }
@@ -89,6 +98,8 @@ export default function ProductPage() {
       setWishlisted(true);
     }
   };
+
+  useDocumentTitle(product?.name || "Product", product?.description?.slice(0, 160));
 
   if (loading) {
     return (
@@ -243,6 +254,34 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
+
+        {/* Related products */}
+        {related.length > 0 && (
+          <div className="max-w-[1440px] mx-auto px-6 md:px-12 pb-16 md:pb-24 border-t border-border pt-12 md:pt-16">
+            <h2 className="text-2xl font-black mb-8" style={{ fontFamily: "'Fraunces', serif" }}>
+              You might also <em className="font-light italic">like</em>
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-10">
+              {related.map((p) => (
+                <MotionLink key={p.id} to={`/product/${p.slug}`}
+                  initial="rest" whileHover="hover" whileTap={tapScaleSm}
+                  className="block cursor-pointer">
+                  <div className="relative overflow-hidden bg-secondary aspect-[4/5] mb-4">
+                    <motion.img
+                      src={getImageUrl(p.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
+                      alt={p.name}
+                      variants={{ rest: { filter: "grayscale(1)", scale: 1 }, hover: { filter: "grayscale(0)", scale: 1.05 } }}
+                      transition={{ duration: 0.7 }}
+                      className="absolute inset-0 w-full h-full object-cover" />
+                  </div>
+                  <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">{p.category}</p>
+                  <h3 className="text-sm font-medium leading-snug">{p.name}</h3>
+                  <p className="text-sm font-semibold mt-1">₦{Number(p.price).toLocaleString()}</p>
+                </MotionLink>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 </>
   );

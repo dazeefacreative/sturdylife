@@ -127,18 +127,25 @@ router.put("/:id", authenticate, adminOnly, upload.array("images", 8), async (re
     const { name, description, price, category_id, tag, is_active, sizes } = req.body;
     const slug = name ? slugify(name, { lower: true, strict: true }) : undefined;
 
-    await conn.query(
-      `UPDATE products SET
-        name = COALESCE(?, name),
-        slug = COALESCE(?, slug),
-        description = COALESCE(?, description),
-        price = COALESCE(?, price),
-        category_id = COALESCE(?, category_id),
-        tag = ?,
-        is_active = COALESCE(?, is_active)
-       WHERE id = ?`,
-      [name, slug, description, price, category_id, tag || null, is_active, req.params.id]
-    );
+    const fields = [];
+    const params = [];
+    if (name !== undefined)        { fields.push("name = ?");        params.push(name); }
+    if (slug !== undefined)        { fields.push("slug = ?");        params.push(slug); }
+    if (description !== undefined) { fields.push("description = ?"); params.push(description); }
+    if (price !== undefined)       { fields.push("price = ?");       params.push(price); }
+    if (category_id !== undefined) { fields.push("category_id = ?"); params.push(category_id || null); }
+    if (tag !== undefined)         { fields.push("tag = ?");         params.push(tag || null); }
+    if (is_active !== undefined) {
+      fields.push("is_active = ?");
+      params.push((is_active === false || is_active === "false" || is_active === "0" || is_active === 0) ? 0 : 1);
+    }
+
+    if (fields.length) {
+      await conn.query(
+        `UPDATE products SET ${fields.join(", ")} WHERE id = ?`,
+        [...params, req.params.id]
+      );
+    }
 
     if (req.files && req.files.length) {
       // Get next display order
@@ -169,6 +176,7 @@ router.put("/:id", authenticate, adminOnly, upload.array("images", 8), async (re
     res.json({ message: "Product updated" });
   } catch (err) {
     await conn.rollback();
+    console.error(err);
     res.status(500).json({ error: "Failed to update product" });
   } finally {
     conn.release();

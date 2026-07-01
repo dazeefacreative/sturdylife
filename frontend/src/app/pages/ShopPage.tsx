@@ -145,27 +145,34 @@ export default function ShopPage() {
 
       <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-8">
         {/* Filters row */}
-        <div className="flex flex-wrap items-center gap-3 mb-10">
-          {/* Category pills */}
-          <div className="flex flex-wrap gap-2 flex-1">
-            {CATEGORIES.map((c) => {
-              const isActive = activeCategory === c.slug;
-              return (
-                <motion.button key={c.slug}
-                  onClick={() => navigate(c.slug ? `/shop/${c.slug}` : "/shop")}
-                  initial={false}
-                  animate={isActive ? pillSelected : pillRestUnselected}
-                  whileHover={isActive ? undefined : pillHover}
-                  whileTap={tapScaleSm}
-                  transition={{ duration: 0.2 }}
-                  className="px-4 py-1.5 text-[11px] tracking-widest uppercase border">
-                  {c.label}
-                </motion.button>
-              );
-            })}
+        <div className="mb-10">
+          {/* Row 1: category pills + tag filter toggle (full width) */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex flex-wrap gap-2 flex-1">
+              {CATEGORIES.map((c) => {
+                const isActive = activeCategory === c.slug;
+                return (
+                  <motion.button key={c.slug}
+                    onClick={() => navigate(c.slug ? `/shop/${c.slug}` : "/shop")}
+                    initial={false}
+                    animate={isActive ? pillSelected : pillRestUnselected}
+                    whileHover={isActive ? undefined : pillHover}
+                    whileTap={tapScaleSm}
+                    transition={{ duration: 0.2 }}
+                    className="px-4 py-1.5 text-[11px] tracking-widest uppercase border">
+                    {c.label}
+                  </motion.button>
+                );
+              })}
+            </div>
+            <MotionButton onClick={() => setFilterOpen(!filterOpen)}
+              initial="rest" whileHover="hover" whileTap={tapScaleSm} variants={ghostLinkVariants}
+              className="flex items-center gap-2 text-[11px] tracking-widest uppercase border border-border px-3 py-1.5 shrink-0">
+              <SlidersHorizontal size={12} /> Filter
+            </MotionButton>
           </div>
 
-          {/* Search */}
+          {/* Row 2: search (full width) */}
           <form onSubmit={(e) => {
             e.preventDefault();
             const cleanSearch = search.trim();
@@ -174,21 +181,14 @@ export default function ShopPage() {
             } else {
               setSearchParams({});
             }
-          }} className="flex items-center">
+          }} className="w-full">
             <input
-              placeholder="Search…"
+              placeholder="Search products…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="border border-border px-4 py-1.5 text-xs bg-transparent focus:outline-none focus:border-foreground w-44 transition-colors"
+              className="w-full border border-border px-4 py-2 text-[16px] md:text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors"
             />
           </form>
-
-          {/* Tag filter toggle */}
-          <MotionButton onClick={() => setFilterOpen(!filterOpen)}
-            initial="rest" whileHover="hover" whileTap={tapScaleSm} variants={ghostLinkVariants}
-            className="flex items-center gap-2 text-[11px] tracking-widest uppercase border border-border px-3 py-1.5">
-            <SlidersHorizontal size={12} /> Filter
-          </MotionButton>
         </div>
 
         {/* Tag filter panel */}

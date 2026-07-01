@@ -5,6 +5,7 @@ import { SiteFooter } from "@/app/components/layout/SiteFooter";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import editorialShoot from "@/imports/editorialShoot.jpg";
 
 const values = [
   { title: "Construction first", body: "Reinforced seams, heavyweight cotton, full-grain leather - every piece is built to be worn for a decade, not a season." },
@@ -80,7 +81,7 @@ export default function AboutPage() {
           </div>
         </Reveal>
         <div className="relative overflow-hidden bg-muted min-h-[300px] md:min-h-0 order-1 md:order-2">
-          <img src="https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=900&h=900&fit=crop&auto=format"
+          <img src={editorialShoot}
             alt="Sturdy Life craftsmanship detail"
             className="absolute inset-0 w-full h-full object-cover grayscale" />
         </div>

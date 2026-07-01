@@ -14,6 +14,7 @@ import { getImageUrl } from "@/lib/media";
 import beanieCap from "@/imports/beanie caps.jpg";
 import hoodies from "@/imports/hoodies.jpg";
 import shirts from "@/imports/shirts.jpg";
+import editorialShoot2 from "@/imports/editorialShoot2.jpg";
 
 const categories = [
   { name: "Hoodies", subtitle: "Essential comfort", image: hoodies, slug: "hoodies" },
@@ -300,7 +301,7 @@ export default function HomePage() {
       {/* Editorial band */}
       <section className="grid md:grid-cols-2 min-h-[500px]">
         <div className="relative overflow-hidden bg-muted min-h-[300px] md:min-h-0">
-          <img src="https://images.unsplash.com/photo-1586231912972-d0970f9ce787?w=900&h=700&fit=crop&auto=format"
+          <img src={editorialShoot2}
             alt="Male model in black Sturdy Life jacket"
             className="absolute inset-0 w-full h-full object-cover grayscale" />
         </div>

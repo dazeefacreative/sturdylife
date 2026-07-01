@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, ShoppingBag } from "lucide-react";
+import { ArrowRight, ShoppingBag, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/media";
-import { MotionButton, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
+import { MotionButton, arrowShiftVariants, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const outlineButtonVariants = {
@@ -19,32 +19,55 @@ const solidButtonVariants = {
   hover: { backgroundColor: "rgba(var(--action-rgb), 0.8)" },
 };
 
+const emptyForm = {
+  first_name: "", last_name: "", phone: "",
+  address_line1: "", address_line2: "", city: "", state: "", country: "Nigeria", postal_code: "",
+};
+
 export default function CheckoutPage() {
   useDocumentTitle("Checkout");
   const { items, subtotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const [form, setForm] = useState({ ...emptyForm });
+  const [saveInfo, setSaveInfo] = useState(true);
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const shippingFee = subtotal >= 250000 ? 0 : 2500;
   const total = subtotal + shippingFee;
 
-  const [form, setForm] = useState({
-    first_name: user?.first_name || "",
-    last_name:  user?.last_name  || "",
-    email:      user?.email      || "",
-    phone:      "",
-    address_line1: "",
-    address_line2: "",
-    city:     "",
-    state:    "",
-    country:  "Nigeria",
-    postal_code: "",
-  });
-
   const set = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  useEffect(() => {
+    if (!user) return;
+    api.get("/checkout-addresses")
+      .then(({ data }) => setSavedAddresses(data))
+      .catch(() => {});
+  }, [user]);
+
+  const applyAddress = (addr: any) => {
+    setForm({
+      first_name:    addr.first_name,
+      last_name:     addr.last_name,
+      phone:         addr.phone || "",
+      address_line1: addr.address_line1,
+      address_line2: addr.address_line2 || "",
+      city:          addr.city,
+      state:         addr.state,
+      country:       addr.country,
+      postal_code:   addr.postal_code || "",
+    });
+  };
+
+  const deleteAddress = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    await api.delete(`/checkout-addresses/${id}`);
+    setSavedAddresses((prev) => prev.filter((a) => a.id !== id));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +76,10 @@ export default function CheckoutPage() {
     setError("");
 
     try {
+      if (saveInfo) {
+        await api.post("/checkout-addresses", form).catch(() => {});
+      }
+
       const { data } = await api.post("/payment/initialize", {
         ...form,
         items: items.map((i) => ({
@@ -62,13 +89,14 @@ export default function CheckoutPage() {
         })),
       });
 
-      // Redirect to Paystack checkout
       window.location.href = data.payment_url;
     } catch (err: any) {
       setError(err.response?.data?.error || "Payment initialization failed. Please try again.");
       setLoading(false);
     }
   };
+
+  const inputCls = "border border-border px-4 py-3 text-[16px] md:text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors";
 
   if (!items.length) {
     return (
@@ -89,17 +117,42 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-background" style={{ fontFamily: "'Barlow', sans-serif" }}>
-      {/* Header */}
       <header className="border-b border-border px-6 md:px-12 py-4">
         <a href="/" className="text-xs tracking-widest uppercase">← Sturdy Life</a>
       </header>
 
       <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-12 grid md:grid-cols-[1fr_380px] gap-16">
-        {/* Form */}
         <form onSubmit={handleSubmit}>
           <h1 className="text-2xl font-black mb-8" style={{ fontFamily: "'Fraunces', serif" }}>
             Checkout
           </h1>
+
+          {/* Saved addresses picker */}
+          {savedAddresses.length > 0 && (
+            <section className="mb-8">
+              <h2 className="text-[10px] tracking-widest uppercase font-bold mb-3 border-b border-border pb-3">
+                Saved Information
+              </h2>
+              <div className="space-y-2">
+                {savedAddresses.map((addr) => (
+                  <motion.div key={addr.id}
+                    onClick={() => applyAddress(addr)}
+                    whileTap={tapScaleSm}
+                    className="flex items-center justify-between border border-border px-4 py-3 cursor-pointer hover:border-foreground transition-colors">
+                    <div>
+                      <p className="text-sm font-medium">{addr.first_name} {addr.last_name}</p>
+                      <p className="text-xs text-muted-foreground">{addr.address_line1}, {addr.city}</p>
+                    </div>
+                    <MotionButton type="button" onClick={(e) => deleteAddress(e, addr.id)}
+                      whileTap={tapScaleSm}
+                      className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                      <X size={14} />
+                    </MotionButton>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Contact */}
           <section className="mb-8">
@@ -109,16 +162,13 @@ export default function CheckoutPage() {
             <div className="grid grid-cols-2 gap-4">
               <input required placeholder="First name" value={form.first_name}
                 onChange={(e) => set("first_name", e.target.value)}
-                className="border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
+                className={inputCls} />
               <input required placeholder="Last name" value={form.last_name}
                 onChange={(e) => set("last_name", e.target.value)}
-                className="border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
-              <input required type="email" placeholder="Email" value={form.email}
-                onChange={(e) => set("email", e.target.value)}
-                className="col-span-2 border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
+                className={inputCls} />
               <input placeholder="Phone number" value={form.phone}
                 onChange={(e) => set("phone", e.target.value)}
-                className="col-span-2 border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
+                className={`col-span-2 ${inputCls}`} />
             </div>
           </section>
 
@@ -130,28 +180,36 @@ export default function CheckoutPage() {
             <div className="grid grid-cols-2 gap-4">
               <input required placeholder="Address" value={form.address_line1}
                 onChange={(e) => set("address_line1", e.target.value)}
-                className="col-span-2 border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
+                className={`col-span-2 ${inputCls}`} />
               <input placeholder="Apartment, suite, etc. (optional)" value={form.address_line2}
                 onChange={(e) => set("address_line2", e.target.value)}
-                className="col-span-2 border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
+                className={`col-span-2 ${inputCls}`} />
               <input required placeholder="City" value={form.city}
                 onChange={(e) => set("city", e.target.value)}
-                className="border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
+                className={inputCls} />
               <input required placeholder="State" value={form.state}
                 onChange={(e) => set("state", e.target.value)}
-                className="border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
+                className={inputCls} />
               <input required placeholder="Country" value={form.country}
                 onChange={(e) => set("country", e.target.value)}
-                className="border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
+                className={inputCls} />
               <input placeholder="Postal code" value={form.postal_code}
                 onChange={(e) => set("postal_code", e.target.value)}
-                className="border border-border px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-foreground transition-colors" />
+                className={inputCls} />
             </div>
           </section>
 
-          {error && (
-            <p className="text-red-500 text-sm mb-4">{error}</p>
-          )}
+          {/* Save info checkbox */}
+          <div className="flex items-start gap-3 mb-8">
+            <input type="checkbox" id="save-info" checked={saveInfo}
+              onChange={(e) => setSaveInfo(e.target.checked)}
+              className="mt-0.5 w-4 h-4 shrink-0 cursor-pointer" />
+            <label htmlFor="save-info" className="text-xs text-muted-foreground cursor-pointer leading-relaxed">
+              Save this information for future checkouts. Untick this box if you don't want it saved.
+            </label>
+          </div>
+
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
           <MotionButton
             type="submit"
@@ -175,7 +233,6 @@ export default function CheckoutPage() {
         {/* Order summary */}
         <aside className="bg-secondary p-6 h-fit">
           <h2 className="text-[10px] tracking-widest uppercase font-bold mb-6">Order Summary</h2>
-
           <div className="space-y-4 mb-6">
             {items.map((item) => (
               <div key={`${item.product_id}-${item.size}`} className="flex gap-3">
@@ -193,19 +250,16 @@ export default function CheckoutPage() {
               </div>
             ))}
           </div>
-
           <div className="border-t border-border pt-4 space-y-2">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Subtotal</span>
-              <span>₦{subtotal.toLocaleString()}</span>
+              <span>Subtotal</span><span>₦{subtotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Shipping</span>
               <span>{shippingFee === 0 ? "Free" : <>₦{shippingFee.toLocaleString()}</>}</span>
             </div>
             <div className="flex justify-between text-sm font-bold border-t border-border pt-2 mt-2">
-              <span>Total</span>
-              <span>₦{total.toLocaleString()}</span>
+              <span>Total</span><span>₦{total.toLocaleString()}</span>
             </div>
           </div>
         </aside>

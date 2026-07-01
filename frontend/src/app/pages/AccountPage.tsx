@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { User, ShoppingBag, Heart, LogOut } from "lucide-react";
+import { User, ShoppingBag, Heart, LogOut, Store } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
@@ -41,6 +41,7 @@ export default function AccountPage() {
         <Reveal>
           <div className="grid md:grid-cols-3 gap-4 max-w-2xl">
             {[
+              { icon: Store,        label: "Shop",        sub: "Browse the collection",    to: "/shop" },
               { icon: ShoppingBag, label: "My Orders",  sub: "Track and manage orders",  to: "/account/orders" },
               { icon: Heart,       label: "Wishlist",    sub: "Saved items",              to: "/account/wishlist" },
               { icon: User,        label: "Profile",     sub: "Edit your details",        to: "/account/profile" },

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingBag, Search, Menu, X } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, User } from "lucide-react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
@@ -128,7 +128,7 @@ export function SiteHeader() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search products..."
-              className="w-full rounded border border-border bg-transparent px-4 py-2 text-sm outline-none"
+              className="w-full rounded border border-border bg-transparent px-4 py-2 text-[16px] md:text-sm outline-none"
             />
             <motion.button type="submit" whileTap={tapScaleSm}
               className="w-full rounded bg-foreground px-4 py-2 text-xs uppercase tracking-widest text-primary-foreground">
@@ -151,15 +151,17 @@ export function SiteHeader() {
               {user ? (
                 <MotionLink to={user.role === "admin" ? "/admin" : "/account"}
                   whileTap={tapScaleSm}
-                  className="text-sm tracking-widest uppercase text-foreground border-b border-border pb-4"
+                  className="flex items-center gap-2 text-sm tracking-widest uppercase text-foreground border-b border-border pb-4"
                   onClick={() => setMenuOpen(false)}>
+                  <User size={14} strokeWidth={1.5} />
                   {user.first_name}
                 </MotionLink>
               ) : (
                 <MotionLink to="/login"
                   whileTap={tapScaleSm}
-                  className="text-sm tracking-widest uppercase text-foreground border-b border-border pb-4"
+                  className="flex items-center gap-2 text-sm tracking-widest uppercase text-foreground border-b border-border pb-4"
                   onClick={() => setMenuOpen(false)}>
+                  <User size={14} strokeWidth={1.5} />
                   Login
                 </MotionLink>
               )}

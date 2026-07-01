@@ -45,6 +45,7 @@ export default function ProductPage() {
     api.get(`/products/${slug}`)
       .then(({ data }) => {
         setProduct(data);
+        setActiveImage(0);
         setLoading(false);
       })
       .catch(() => { setLoading(false); navigate("/shop"); });
@@ -145,12 +146,14 @@ export default function ProductPage() {
                 })}
               </div>
             )}
-            {/* Main image */}
+            {/* Main image — all images rendered & preloaded, only active is visible */}
             <div className="flex-1 aspect-[4/5] overflow-hidden bg-secondary relative">
-              <img src={allImages[activeImage]} alt={product.name}
-                className="w-full h-full object-cover" />
+              {allImages.map((img: string, i: number) => (
+                <img key={i} src={img} alt={i === 0 ? product.name : ""}
+                  className={`absolute inset-0 w-full h-full object-cover transition-none ${i === activeImage ? "opacity-100" : "opacity-0 pointer-events-none"}`} />
+              ))}
               {product.tag && (
-                <span className="absolute top-4 left-4 bg-foreground text-primary-foreground text-[10px] tracking-widest uppercase px-2 py-1">
+                <span className="absolute top-4 left-4 bg-foreground text-primary-foreground text-[10px] tracking-widest uppercase px-2 py-1 z-10">
                   {product.tag}
                 </span>
               )}

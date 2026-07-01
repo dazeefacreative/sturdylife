@@ -166,11 +166,34 @@ CREATE TABLE newsletter_subscribers (
 );
 
 -- ─────────────────────────────────────────
+-- SAVED CHECKOUT ADDRESSES
+-- Linked to a user account. Up to 10 per user.
+-- Used to auto-fill checkout for returning customers
+-- or when purchasing for someone else (different name/address).
+-- ─────────────────────────────────────────
+CREATE TABLE checkout_addresses (
+  id            INT PRIMARY KEY AUTO_INCREMENT,
+  user_id       INT NOT NULL,
+  first_name    VARCHAR(100) NOT NULL,
+  last_name     VARCHAR(100) NOT NULL,
+  phone         VARCHAR(20),
+  address_line1 VARCHAR(255) NOT NULL,
+  address_line2 VARCHAR(255),
+  city          VARCHAR(100) NOT NULL,
+  state         VARCHAR(100) NOT NULL,
+  country       VARCHAR(100) NOT NULL DEFAULT 'Nigeria',
+  postal_code   VARCHAR(20),
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- ─────────────────────────────────────────
 -- INDEXES for performance
 -- ─────────────────────────────────────────
-CREATE INDEX idx_products_category   ON products(category_id);
-CREATE INDEX idx_products_active     ON products(is_active);
-CREATE INDEX idx_orders_user         ON orders(user_id);
-CREATE INDEX idx_orders_status       ON orders(status);
-CREATE INDEX idx_orders_reference    ON orders(paystack_reference);
-CREATE INDEX idx_order_items_order   ON order_items(order_id);
+CREATE INDEX idx_products_category      ON products(category_id);
+CREATE INDEX idx_products_active        ON products(is_active);
+CREATE INDEX idx_orders_user            ON orders(user_id);
+CREATE INDEX idx_orders_status          ON orders(status);
+CREATE INDEX idx_orders_reference       ON orders(paystack_reference);
+CREATE INDEX idx_order_items_order      ON order_items(order_id);
+CREATE INDEX idx_checkout_addr_user     ON checkout_addresses(user_id);

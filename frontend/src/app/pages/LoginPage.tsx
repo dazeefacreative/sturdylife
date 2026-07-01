@@ -16,7 +16,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from || "/account";
+  const from = (location.state as any)?.from;
 
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +29,9 @@ export default function LoginPage() {
     setError("");
     try {
       await login(email, password);
-      navigate(from, { replace: true });
+      const user = JSON.parse(localStorage.getItem("sl_user") || "{}");
+      const destination = from || (user.role === "admin" ? "/admin" : "/shop");
+      navigate(destination, { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.error || "Login failed. Check your credentials.");
     } finally {
@@ -37,7 +39,7 @@ export default function LoginPage() {
     }
   };
 
-  const inputCls = "w-full border-b border-foreground bg-transparent py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-foreground/60 transition-colors font-light";
+  const inputCls = "w-full border-b border-foreground bg-transparent py-3 text-[16px] md:text-sm placeholder:text-muted-foreground focus:outline-none focus:border-foreground/60 transition-colors font-light";
 
   return (
     <div className="min-h-screen flex" style={{ fontFamily: "'Barlow', sans-serif" }}>

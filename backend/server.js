@@ -37,9 +37,10 @@ app.use("/api/categories", require("./routes/categories"));
 app.use("/api/cart",       require("./routes/cart"));
 app.use("/api/orders",     require("./routes/orders"));
 app.use("/api/payment",    require("./routes/payment"));
-app.use("/api/wishlist",   require("./routes/wishlist"));
-app.use("/api/newsletter", require("./routes/newsletter"));
-app.use("/api/admin",      require("./routes/admin"));
+app.use("/api/wishlist",             require("./routes/wishlist"));
+app.use("/api/newsletter",           require("./routes/newsletter"));
+app.use("/api/checkout-addresses",   require("./routes/checkoutAddresses"));
+app.use("/api/admin",                require("./routes/admin"));
 
 // ─── Health check ─────────────────────────────────────────────
 app.get("/api/health", (req, res) => {

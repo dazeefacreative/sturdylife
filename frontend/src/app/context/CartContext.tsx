@@ -41,7 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Load cart on mount / user change. Guest cart persistence is handled
   // explicitly inside each mutation below (not via a reactive effect on
-  // `items`) — an effect keyed on `items` would also fire on this initial
+  // `items`) - an effect keyed on `items` would also fire on this initial
   // load with the stale pre-load value still in its closure, overwriting
   // the very data this effect is meant to read.
   useEffect(() => {
@@ -79,7 +79,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                   ? { ...i, quantity: i.quantity + quantity }
                   : i
               )
-            // For guest, we store minimal info — product details would need a fetch
+            // For guest, we store minimal info - product details would need a fetch
             // In practice, pass full product data from ProductPage
             : prev;
           persistGuestCart(next);

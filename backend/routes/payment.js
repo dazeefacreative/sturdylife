@@ -19,16 +19,19 @@ const makeOrderNumber = () => {
 
 // ─── POST /api/payment/initialize ────────────────────────────
 // Creates an order record and returns a Paystack authorization URL
-router.post("/initialize", optionalAuth, async (req, res) => {
+router.post("/initialize", authenticate, async (req, res) => {
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
 
     const {
-      email, first_name, last_name, phone,
+      first_name, last_name, phone,
       address_line1, address_line2, city, state, country, postal_code,
       items,   // [{ product_id, size, quantity }]
     } = req.body;
+
+    // Always use the authenticated user's email for receipts
+    const email = req.user.email;
 
     if (!items || !items.length) return res.status(400).json({ error: "Cart is empty" });
 

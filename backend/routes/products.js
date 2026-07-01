@@ -74,7 +74,7 @@ router.get("/:slug", async (req, res) => {
 });
 
 // ─── POST /api/products — admin create ───────────────────────
-router.post("/", authenticate, adminOnly, upload.array("images", 8), async (req, res) => {
+router.post("/", authenticate, adminOnly, ...upload.withCompression("images", 8), async (req, res) => {
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
@@ -120,7 +120,7 @@ router.post("/", authenticate, adminOnly, upload.array("images", 8), async (req,
 });
 
 // ─── PUT /api/products/:id — admin update ────────────────────
-router.put("/:id", authenticate, adminOnly, upload.array("images", 8), async (req, res) => {
+router.put("/:id", authenticate, adminOnly, ...upload.withCompression("images", 8), async (req, res) => {
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();

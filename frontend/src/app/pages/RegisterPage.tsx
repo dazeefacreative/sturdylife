@@ -31,7 +31,7 @@ export default function RegisterPage() {
     } finally { setLoading(false); }
   };
 
-  const inputCls = "w-full border-b border-foreground bg-transparent py-3 text-sm placeholder:text-muted-foreground focus:outline-none transition-colors font-light";
+  const inputCls = "w-full border-b border-foreground bg-transparent py-3 text-[16px] md:text-sm placeholder:text-muted-foreground focus:outline-none transition-colors font-light";
 
   return (
     <div className="min-h-screen flex" style={{ fontFamily: "'Barlow', sans-serif" }}>

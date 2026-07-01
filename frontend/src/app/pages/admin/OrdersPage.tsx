@@ -117,6 +117,19 @@ export default function AdminOrdersPage() {
                         <p><span className="font-medium text-foreground">Ref:</span> {o.paystack_reference || "—"}</p>
                         <p><span className="font-medium text-foreground">Paid at:</span> {o.paid_at ? new Date(o.paid_at).toLocaleString() : "—"}</p>
                       </div>
+                      {o.items?.length > 0 && (
+                        <div className="mt-3 border-t border-border/50 pt-3">
+                          <p className="font-medium text-foreground text-xs mb-2">Items</p>
+                          <div className="space-y-1">
+                            {o.items.map((it: any) => (
+                              <div key={it.id} className="flex items-center justify-between text-xs text-muted-foreground">
+                                <span>{it.product_name} ({it.size}) × {it.quantity}</span>
+                                <span>₦{Number(it.subtotal).toLocaleString()}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

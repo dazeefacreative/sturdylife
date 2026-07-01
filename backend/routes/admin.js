@@ -56,6 +56,20 @@ router.get("/orders", async (req, res) => {
     `SELECT * FROM orders WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
     [...params, Number(limit), Number(offset)]
   );
+
+  if (orders.length) {
+    const orderIds = orders.map((o) => o.id);
+    const [items] = await db.query(
+      `SELECT * FROM order_items WHERE order_id IN (${orderIds.map(() => "?").join(",")})`,
+      orderIds
+    );
+    const itemsByOrder = {};
+    for (const item of items) {
+      (itemsByOrder[item.order_id] ||= []).push(item);
+    }
+    for (const order of orders) order.items = itemsByOrder[order.id] || [];
+  }
+
   const [[{ total }]] = await db.query(`SELECT COUNT(*) AS total FROM orders WHERE ${where}`, params);
   res.json({ orders, total, page: Number(page) });
 });

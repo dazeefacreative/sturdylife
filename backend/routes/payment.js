@@ -3,6 +3,7 @@ const crypto  = require("crypto");
 const axios   = require("axios");
 const db      = require("../config/db");
 const { authenticate, optionalAuth } = require("../middleware/auth");
+const { sendCustomerReceipt, sendAdminOrderAlert } = require("../utils/orderEmails");
 
 const router = express.Router();
 
@@ -58,7 +59,7 @@ router.post("/initialize", optionalAuth, async (req, res) => {
       });
     }
 
-    const shipping_fee = subtotal >= 250000 ? 0 : 15; // free shipping over ₦250
+    const shipping_fee = subtotal >= 250000 ? 0 : 2500; // free shipping over ₦250,000
     const total = subtotal + shipping_fee;
     const order_number = makeOrderNumber();
 
@@ -155,15 +156,24 @@ router.get("/verify/:reference", async (req, res) => {
 
     const txn = psRes.data.data;
     if (txn.status === "success") {
-      await db.query(
+      const [updateResult] = await db.query(
         `UPDATE orders SET status = 'paid', paystack_transaction_id = ?, paid_at = NOW()
-         WHERE id = ?`,
+         WHERE id = ? AND status != 'paid'`,
         [txn.id, order.id]
       );
 
       // Clear cart if user is logged in
       if (order.user_id) {
         await db.query("DELETE FROM cart_items WHERE user_id = ?", [order.user_id]);
+      }
+
+      // Only the request that actually flipped the order to 'paid' sends emails
+      // (avoids double-sending if the webhook beats this request to it)
+      if (updateResult.affectedRows > 0) {
+        const [items] = await db.query("SELECT * FROM order_items WHERE order_id = ?", [order.id]);
+        const paidOrder = { ...order, status: "paid" };
+        sendCustomerReceipt(paidOrder, items);
+        sendAdminOrderAlert(paidOrder, items);
       }
 
       return res.json({ status: "paid", order: { ...order, status: "paid" } });
@@ -196,19 +206,28 @@ router.post("/webhook", async (req, res) => {
 
     if (event.event === "charge.success") {
       const { reference, id: txnId } = event.data;
-      await db.query(
+      const [updateResult] = await db.query(
         `UPDATE orders
          SET status = 'paid', paystack_transaction_id = ?, paid_at = NOW()
          WHERE (paystack_reference = ? OR order_number = ?) AND status = 'pending'`,
         [txnId, reference, reference]
       );
 
-      // Also clear cart for the user
       const [[order]] = await db.query(
-        "SELECT user_id FROM orders WHERE order_number = ?", [reference]
+        "SELECT * FROM orders WHERE order_number = ?", [reference]
       );
+
+      // Also clear cart for the user
       if (order?.user_id) {
         await db.query("DELETE FROM cart_items WHERE user_id = ?", [order.user_id]);
+      }
+
+      // Only the request that actually flipped the order to 'paid' sends emails
+      // (avoids double-sending if /verify beats this webhook to it)
+      if (updateResult.affectedRows > 0 && order) {
+        const [items] = await db.query("SELECT * FROM order_items WHERE order_id = ?", [order.id]);
+        sendCustomerReceipt(order, items);
+        sendAdminOrderAlert(order, items);
       }
     }
 

@@ -119,7 +119,7 @@ export default function ProductFormPage() {
     }
   };
 
-  const inputCls = "border border-border px-4 py-3 text-sm bg-transparent w-full focus:outline-none focus:border-foreground transition-colors";
+  const inputCls = "border border-border px-4 py-3 text-[16px] md:text-sm bg-transparent w-full focus:outline-none focus:border-foreground transition-colors";
 
   return (
     <div className="max-w-3xl mx-auto py-6 md:py-10 px-4 md:px-6">
@@ -182,7 +182,7 @@ export default function ProductFormPage() {
                 <input
                   type="number" min="0" value={stock}
                   onChange={(e) => setStock(size, Number(e.target.value))}
-                  className="border border-border w-full text-center py-2 text-sm bg-transparent focus:outline-none focus:border-foreground"
+                  className="border border-border w-full text-center py-2 text-[16px] md:text-sm bg-transparent focus:outline-none focus:border-foreground"
                 />
               </div>
             ))}

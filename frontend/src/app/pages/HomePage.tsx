@@ -363,7 +363,7 @@ export default function HomePage() {
                 <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                     placeholder="Your email address" required
-                    className="flex-1 border-b border-foreground bg-transparent py-3 text-sm placeholder:text-muted-foreground focus:outline-none font-light" />
+                    className="flex-1 border-b border-foreground bg-transparent py-3 text-[16px] md:text-sm placeholder:text-muted-foreground focus:outline-none font-light" />
                   <motion.button type="submit"
                     initial="rest" whileHover="hover" whileTap={tapScale}
                     variants={fadeHoverVariants}

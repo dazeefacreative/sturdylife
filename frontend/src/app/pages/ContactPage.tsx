@@ -95,17 +95,17 @@ export default function ContactPage() {
                   <div>
                     <label className="block text-[10px] tracking-widest uppercase text-muted-foreground mb-2">Name</label>
                     <input value={form.name} onChange={update("name")} required
-                      className="w-full border-b border-foreground bg-transparent py-2 text-sm placeholder:text-muted-foreground focus:outline-none font-light" />
+                      className="w-full border-b border-foreground bg-transparent py-2 text-[16px] md:text-sm placeholder:text-muted-foreground focus:outline-none font-light" />
                   </div>
                   <div>
                     <label className="block text-[10px] tracking-widest uppercase text-muted-foreground mb-2">Email</label>
                     <input type="email" value={form.email} onChange={update("email")} required
-                      className="w-full border-b border-foreground bg-transparent py-2 text-sm placeholder:text-muted-foreground focus:outline-none font-light" />
+                      className="w-full border-b border-foreground bg-transparent py-2 text-[16px] md:text-sm placeholder:text-muted-foreground focus:outline-none font-light" />
                   </div>
                   <div>
                     <label className="block text-[10px] tracking-widest uppercase text-muted-foreground mb-2">Message</label>
                     <textarea value={form.message} onChange={update("message")} required rows={5}
-                      className="w-full border-b border-foreground bg-transparent py-2 text-sm placeholder:text-muted-foreground focus:outline-none font-light resize-none" />
+                      className="w-full border-b border-foreground bg-transparent py-2 text-[16px] md:text-sm placeholder:text-muted-foreground focus:outline-none font-light resize-none" />
                   </div>
                   <MotionButton type="submit" disabled={sending}
                     initial="rest" whileHover={sending ? undefined : "hover"} whileTap={sending ? undefined : tapScale}

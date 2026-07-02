@@ -64,7 +64,7 @@ export default function ProfilePage() {
     }
   };
 
-  const inputCls = "w-full border-b border-foreground bg-transparent py-3 text-sm placeholder:text-muted-foreground focus:outline-none font-light";
+  const inputCls = "w-full border-b border-foreground bg-transparent py-3 text-[16px] md:text-sm placeholder:text-muted-foreground focus:outline-none font-light";
 
   return (
     <div className="min-h-screen bg-background" style={{ fontFamily: "'Barlow', sans-serif" }}>

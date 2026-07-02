@@ -110,7 +110,7 @@ router.post("/initialize", authenticate, async (req, res) => {
             { display_name: "Order Number", variable_name: "order_number", value: order_number },
           ],
         },
-        callback_url: `${process.env.FRONTEND_URL}/payment/success?ref=${order_number}`,
+        callback_url: `${process.env.APP_URL || process.env.FRONTEND_URL.split(",").find((u) => u.trim().startsWith("https://")) || process.env.FRONTEND_URL.split(",")[0].trim()}/payment/success?ref=${order_number}`,
       },
       { headers: paystackHeaders }
     );

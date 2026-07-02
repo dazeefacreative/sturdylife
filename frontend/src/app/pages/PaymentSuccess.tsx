@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import api from "@/lib/api";
+import { useCart } from "@/app/context/CartContext";
 import { MotionLink, ghostHoverVariants, tapScale } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
@@ -23,13 +24,19 @@ export function PaymentSuccess() {
   const ref = params.get("ref") || params.get("reference") || "";
   const [status, setStatus] = useState<"verifying" | "paid" | "failed">("verifying");
   const [order, setOrder] = useState<any>(null);
+  const { clearCart } = useCart();
 
   useEffect(() => {
     if (!ref) { setStatus("failed"); return; }
     api.get(`/payment/verify/${ref}`)
       .then(({ data }) => {
         setOrder(data.order);
-        setStatus(data.status === "paid" ? "paid" : "failed");
+        if (data.status === "paid") {
+          clearCart();
+          setStatus("paid");
+        } else {
+          setStatus("failed");
+        }
       })
       .catch(() => setStatus("failed"));
   }, [ref]);

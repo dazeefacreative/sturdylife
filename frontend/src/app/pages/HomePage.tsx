@@ -98,8 +98,7 @@ export default function HomePage() {
   };
 
   const handleAddToCart = async (product: any) => {
-    if (!user) { navigate("/login"); return; }
-    await addItem(product.id, "M", 1);
+    await addItem({ id: product.id, name: product.name, slug: product.slug, price: product.price, image: product.image }, "M", 1);
   };
 
   const handleSubscribe = async (e: React.FormEvent) => {

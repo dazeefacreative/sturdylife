@@ -79,9 +79,9 @@ export default function ProductPage() {
 
   const handleAddToCart = async () => {
     if (!selectedSize) { setSizeError(true); return; }
-    if (!user) { navigate("/login"); return; }
     setAdding(true);
-    await addItem(product.id, selectedSize, quantity);
+    const primaryImage = product.images?.find((img: any) => img.is_primary)?.image_url || product.images?.[0]?.image_url;
+    await addItem({ id: product.id, name: product.name, slug: product.slug, price: product.price, image: primaryImage }, selectedSize, quantity);
     setAdding(false);
   };
 

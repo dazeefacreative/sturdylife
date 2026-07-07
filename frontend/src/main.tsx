@@ -79,7 +79,7 @@ function AppRoutes() {
       <Route path="/payment/success" element={<PaymentSuccess />} />
       <Route path="/payment/failed"  element={<PaymentFailed />} />
 
-      <Route path="/checkout"        element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+      <Route path="/checkout"        element={<CheckoutPage />} />
       <Route path="/account"          element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
       <Route path="/account/orders"   element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
       <Route path="/account/orders/:orderNumber" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />

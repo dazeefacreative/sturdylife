@@ -20,7 +20,7 @@ interface CartContextType {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (product_id: number, size: string, quantity?: number) => Promise<void>;
+  addItem: (product: { id: number; name: string; slug: string; price: number; image?: string }, size: string, quantity?: number) => Promise<void>;
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   removeItem: (itemId: number) => Promise<void>;
   clearCart: () => void;
@@ -64,24 +64,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch (_) { /* silently fail */ }
   };
 
-  const addItem = useCallback(async (product_id: number, size: string, quantity = 1) => {
+  const addItem = useCallback(async (product: { id: number; name: string; slug: string; price: number; image?: string }, size: string, quantity = 1) => {
     setLoading(true);
     try {
       if (user) {
-        await api.post("/cart", { product_id, size, quantity });
+        await api.post("/cart", { product_id: product.id, size, quantity });
         await fetchServerCart();
       } else {
         setItems((prev) => {
-          const existing = prev.find((i) => i.product_id === product_id && i.size === size);
+          const existing = prev.find((i) => i.product_id === product.id && i.size === size);
           const next = existing
             ? prev.map((i) =>
-                i.product_id === product_id && i.size === size
+                i.product_id === product.id && i.size === size
                   ? { ...i, quantity: i.quantity + quantity }
                   : i
               )
-            // For guest, we store minimal info - product details would need a fetch
-            // In practice, pass full product data from ProductPage
-            : prev;
+            : [...prev, {
+                id: Date.now(),
+                product_id: product.id,
+                name: product.name,
+                slug: product.slug,
+                price: product.price,
+                size,
+                quantity,
+                image: product.image || "",
+              }];
           persistGuestCart(next);
           return next;
         });

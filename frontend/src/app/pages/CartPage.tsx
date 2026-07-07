@@ -2,7 +2,6 @@ import { useNavigate } from "react-router";
 import { Minus, Plus, X, ShoppingBag, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCart } from "@/app/context/CartContext";
-import { useAuth } from "@/app/context/AuthContext";
 import { getImageUrl } from "@/lib/media";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { MotionLink, MotionButton, ghostHoverVariants, arrowShiftVariants, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
@@ -16,7 +15,6 @@ const solidButtonVariants = {
 export default function CartPage() {
   useDocumentTitle("Your Bag");
   const { items, subtotal, updateQuantity, removeItem } = useCart();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const shippingFee = subtotal >= 250000 ? 0 : 2500;
@@ -129,11 +127,11 @@ export default function CartPage() {
               </div>
             </div>
             <MotionButton
-              onClick={() => user ? navigate("/checkout") : navigate("/login")}
+              onClick={() => navigate("/checkout")}
               initial="rest" whileHover="hover" whileTap={tapScale}
               variants={solidButtonVariants}
               className="w-full flex items-center justify-center gap-3 text-primary-foreground py-4 text-xs tracking-widest uppercase font-semibold">
-              {user ? "Proceed to Checkout" : "Login to Checkout"}
+              Proceed to Checkout
               <motion.span variants={arrowShiftVariants} className="flex"><ArrowRight size={14} /></motion.span>
             </MotionButton>
             <MotionLink to="/shop" initial="rest" whileHover="hover" variants={ghostHoverVariants}

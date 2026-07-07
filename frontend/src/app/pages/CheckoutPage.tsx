@@ -20,9 +20,12 @@ const solidButtonVariants = {
 };
 
 const emptyForm = {
+  email: "",
   first_name: "", last_name: "", phone: "",
   address_line1: "", address_line2: "", city: "", state: "", country: "Nigeria", postal_code: "",
 };
+
+const GUEST_CHECKOUT_KEY = "sl_guest_checkout_info";
 
 export default function CheckoutPage() {
   useDocumentTitle("Checkout");
@@ -43,10 +46,17 @@ export default function CheckoutPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
 
   useEffect(() => {
-    if (!user) return;
-    api.get("/checkout-addresses")
-      .then(({ data }) => setSavedAddresses(data))
-      .catch(() => {});
+    if (user) {
+      api.get("/checkout-addresses")
+        .then(({ data }) => setSavedAddresses(data))
+        .catch(() => {});
+      return;
+    }
+    // Guest — prefill from locally remembered info, if any
+    try {
+      const saved = localStorage.getItem(GUEST_CHECKOUT_KEY);
+      if (saved) setForm((prev) => ({ ...prev, ...JSON.parse(saved) }));
+    } catch { /* ignore malformed storage */ }
   }, [user]);
 
   const applyAddress = (addr: any) => {
@@ -77,7 +87,13 @@ export default function CheckoutPage() {
 
     try {
       if (saveInfo) {
-        await api.post("/checkout-addresses", form).catch(() => {});
+        if (user) {
+          await api.post("/checkout-addresses", form).catch(() => {});
+        } else {
+          try {
+            localStorage.setItem(GUEST_CHECKOUT_KEY, JSON.stringify(form));
+          } catch { /* storage unavailable — non-fatal */ }
+        }
       }
 
       const { data } = await api.post("/payment/initialize", {
@@ -160,6 +176,11 @@ export default function CheckoutPage() {
               Contact Information
             </h2>
             <div className="grid grid-cols-2 gap-4">
+              {!user && (
+                <input required type="email" placeholder="Email address" value={form.email}
+                  onChange={(e) => set("email", e.target.value)}
+                  className={`col-span-2 ${inputCls}`} />
+              )}
               <input required placeholder="First name" value={form.first_name}
                 onChange={(e) => set("first_name", e.target.value)}
                 className={inputCls} />

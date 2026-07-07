@@ -117,8 +117,7 @@ export default function ShopPage() {
 
   const handleAdd = async (e: React.MouseEvent, product: any) => {
     e.preventDefault();
-    if (!user) { navigate("/login"); return; }
-    await addItem(product.id, "M", 1);
+    await addItem({ id: product.id, name: product.name, slug: product.slug, price: product.price, image: product.image }, "M", 1);
   };
 
   return (

@@ -2,7 +2,7 @@ const express = require("express");
 const crypto  = require("crypto");
 const axios   = require("axios");
 const db      = require("../config/db");
-const { authenticate, optionalAuth } = require("../middleware/auth");
+const { optionalAuth } = require("../middleware/auth");
 const { sendCustomerReceipt, sendAdminOrderAlert } = require("../utils/orderEmails");
 
 const router = express.Router();
@@ -19,7 +19,7 @@ const makeOrderNumber = () => {
 
 // ─── POST /api/payment/initialize ────────────────────────────
 // Creates an order record and returns a Paystack authorization URL
-router.post("/initialize", authenticate, async (req, res) => {
+router.post("/initialize", optionalAuth, async (req, res) => {
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
@@ -30,8 +30,13 @@ router.post("/initialize", authenticate, async (req, res) => {
       items,   // [{ product_id, size, quantity }]
     } = req.body;
 
-    // Always use the authenticated user's email for receipts
-    const email = req.user.email;
+    // Logged-in users always use their account email; guests must supply one
+    const email = req.user?.email || req.body.email;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email || !emailPattern.test(email)) {
+      return res.status(400).json({ error: "A valid email address is required" });
+    }
 
     if (!items || !items.length) return res.status(400).json({ error: "Cart is empty" });
 

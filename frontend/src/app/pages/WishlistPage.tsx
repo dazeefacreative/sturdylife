@@ -36,8 +36,8 @@ export default function WishlistPage() {
     await api.delete(`/wishlist/${productId}`);
   };
 
-  const handleAdd = async (productId: number) => {
-    await addItem(productId, "M", 1);
+  const handleAdd = async (item: any) => {
+    await addItem({ id: item.product_id, name: item.name, slug: item.slug, price: item.price, image: item.image }, "M", 1);
   };
 
   return (
@@ -93,7 +93,7 @@ export default function WishlistPage() {
                       className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center">
                       <Heart size={16} strokeWidth={1.5} className="fill-white stroke-white" />
                     </MotionButton>
-                    <MotionButton onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(item.product_id); }}
+                    <MotionButton onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(item); }}
                       whileTap={tapScaleSm}
                       className="absolute bottom-0 left-0 right-0 bg-foreground text-primary-foreground flex items-center justify-center gap-2 py-3 text-[11px] tracking-widest uppercase font-semibold">
                       <Plus size={12} strokeWidth={2} /> Add to bag

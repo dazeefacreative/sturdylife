@@ -40,6 +40,7 @@ app.use("/api/payment",    require("./routes/payment"));
 app.use("/api/wishlist",             require("./routes/wishlist"));
 app.use("/api/newsletter",           require("./routes/newsletter"));
 app.use("/api/checkout-addresses",   require("./routes/checkoutAddresses"));
+app.use("/api/settings",             require("./routes/settings"));
 app.use("/api/admin",                require("./routes/admin"));
 
 // ─── Health check ─────────────────────────────────────────────

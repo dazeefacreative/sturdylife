@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowRight, ChevronRight, Plus, Heart } from "lucide-react";
 import { useNavigate } from "react-router";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { SiteFooter } from "@/app/components/layout/SiteFooter";
 import { Reveal } from "@/app/components/motion/Reveal";
@@ -16,7 +16,7 @@ import hoodies from "@/imports/hoodies.jpg";
 import shirts from "@/imports/shirts.jpg";
 import editorialShoot2 from "@/imports/editorialShoot2.jpg";
 
-const categories = [
+const categoryDefaults = [
   { name: "Hoodies", subtitle: "Essential comfort", image: hoodies, slug: "hoodies" },
   { name: "Beanie Caps", subtitle: "All-season warmth", image: beanieCap, slug: "beanie-caps" },
   { name: "Shirts", subtitle: "Elevated essentials", image: shirts, slug: "shirts" },
@@ -44,11 +44,6 @@ const categoryOverlayVariants = {
   hover: { backgroundColor: "rgba(0,0,0,0.1)" },
 };
 
-const categoryImageVariants = {
-  rest: { filter: "grayscale(1)", scale: 1 },
-  hover: { filter: "grayscale(0)", scale: 1.05 },
-};
-
 const productImageVariants = {
   rest: { scale: 1 },
   hover: { scale: 1.05 },
@@ -64,6 +59,32 @@ const filterPillVariants = {
   hover: { backgroundColor: "#0f172a", color: "#ffffff" },
 };
 
+function CategorySlideshow({ images, alt, imgClassName }: { images: string[]; alt: string; imgClassName?: string }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    setIndex(0);
+    if (images.length <= 1) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % images.length), 3000);
+    return () => clearInterval(id);
+  }, [images]);
+
+  return (
+    <AnimatePresence>
+      <motion.img
+        key={images[index]}
+        src={images[index]}
+        alt={alt}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.8 }}
+        className={`absolute inset-0 w-full h-full object-cover ${imgClassName || ""}`}
+      />
+    </AnimatePresence>
+  );
+}
+
 export default function HomePage() {
   const { addItem } = useCart();
   const { user } = useAuth();
@@ -75,6 +96,13 @@ export default function HomePage() {
   const [subscribed, setSubscribed] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [heroVideoUrl, setHeroVideoUrl] = useState<string | null>(null);
+  const [categoryImages, setCategoryImages] = useState<Record<string, string[]>>({});
+
+  const categories = categoryDefaults.map((c) => ({
+    ...c,
+    images: categoryImages[c.slug]?.length ? categoryImages[c.slug].map((u) => getImageUrl(u)!) : [c.image],
+  }));
 
   useEffect(() => {
     setLoadingProducts(true);
@@ -85,6 +113,15 @@ export default function HomePage() {
       .catch(() => setProducts([]))
       .finally(() => setLoadingProducts(false));
   }, [activeFilter]);
+
+  useEffect(() => {
+    api.get("/settings")
+      .then(({ data }) => {
+        setHeroVideoUrl(data.hero_video_url || null);
+        setCategoryImages(data.categoryImages || {});
+      })
+      .catch(() => {});
+  }, []);
 
   const toggleWishlist = async (id: number) => {
     if (!user) { navigate("/login"); return; }
@@ -117,6 +154,7 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative w-full overflow-hidden bg-black" style={{ height: "95vh", minHeight: 540 }}>
         <motion.video
+          key={heroVideoUrl || "default"}
           initial={{ scale: 3 }}
           animate={{ scale: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -126,14 +164,16 @@ export default function HomePage() {
           playsInline
           className="absolute inset-0 w-full h-full object-cover object-top origin-top"
         >
-          <source src="/videos/hero-loop.webm" type="video/webm" />
+          <source
+            src={heroVideoUrl ? getImageUrl(heroVideoUrl) : "/videos/hero-loop.webm"}
+            type={heroVideoUrl?.endsWith(".mp4") ? "video/mp4" : "video/webm"}
+          />
         </motion.video>
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-end px-8 md:px-20 pb-16 md:pb-24">
-          <p className="text-white/60 text-xs tracking-[0.3em] uppercase mb-4">Summer 2026 Collection</p>
           <h1 className="text-white text-6xl md:text-[7rem] leading-[0.9] font-black mb-8 max-w-2xl"
             style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'SOFT' 0, 'WONK' 1" }}>
-            Built<br /><em className="font-light italic">to</em><br />endure.
+            Life<br /><em className="font-light italic">with</em><br />Purpose.
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 items-start">
             <MotionLink to="/shop"
@@ -173,12 +213,8 @@ export default function HomePage() {
               initial="rest" whileHover="hover"
               className="group relative overflow-hidden bg-muted cursor-pointer row-span-2 col-span-1" style={{ minHeight: 520 }}
               onClick={() => navigate(`/shop/${categories[0].slug}`)}>
-              <motion.img
-                variants={categoryImageVariants}
-                transition={{ duration: 0.7 }}
-                src={categories[0].image} alt={categories[0].name}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+              <CategorySlideshow images={categories[0].images} alt={categories[0].name}
+                imgClassName="transition-transform duration-700 group-hover:scale-105" />
               <motion.div variants={categoryOverlayVariants} transition={{ duration: 0.5 }} className="absolute inset-0 pointer-events-none" />
               <div className="absolute bottom-6 left-6">
                 <p className="text-white/60 text-[10px] tracking-widest uppercase mb-1">{categories[0].subtitle}</p>
@@ -188,12 +224,10 @@ export default function HomePage() {
             {[categories[1], categories[2]].map((cat) => (
               <motion.div key={cat.slug}
                 initial="rest" whileHover="hover"
-                className="relative overflow-hidden bg-muted cursor-pointer col-span-1 md:col-span-2" style={{ minHeight: 250 }}
+                className="group relative overflow-hidden bg-muted cursor-pointer col-span-1 md:col-span-2" style={{ minHeight: 250 }}
                 onClick={() => navigate(`/shop/${cat.slug}`)}>
-                <motion.img
-                  variants={categoryImageVariants}
-                  transition={{ duration: 0.7 }}
-                  src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover" />
+                <CategorySlideshow images={cat.images} alt={cat.name}
+                  imgClassName="transition-transform duration-700 group-hover:scale-105" />
                 <motion.div variants={categoryOverlayVariants} transition={{ duration: 0.5 }} className="absolute inset-0 pointer-events-none" />
                 <div className="absolute bottom-6 left-6">
                   <p className="text-white/60 text-[10px] tracking-widest uppercase mb-1">{cat.subtitle}</p>
@@ -302,15 +336,15 @@ export default function HomePage() {
         <div className="relative overflow-hidden bg-muted min-h-[300px] md:min-h-0">
           <img src={editorialShoot2}
             alt="Male model in black Sturdy Life jacket"
-            className="absolute inset-0 w-full h-full object-cover grayscale" />
+            className="absolute inset-0 w-full h-full object-cover" />
         </div>
         <Reveal className="bg-foreground text-primary-foreground flex flex-col justify-center px-10 md:px-16 py-16 md:py-24">
           <p className="text-white/40 text-[10px] tracking-[0.3em] uppercase mb-6">The Sturdy Edit</p>
           <h2 className="text-4xl md:text-5xl font-black leading-tight mb-6" style={{ fontFamily: "'Fraunces', serif" }}>
-            Dressed for<br /><em className="font-light italic">the man</em><br />who moves.
+            What does<br /><em className="font-light italic">sturdy life</em><br />mean to you?
           </h2>
           <p className="text-gray-500 text-sm leading-relaxed max-w-sm mb-10 font-light">
-            This season, we return to construction - pieces built for the long game. Structured silhouettes in heavyweight cotton, merino, and full-grain leather.
+            This isn't fashion. It's identity. Sturdy Life was built for those who move with intention — those who understand that life is given, but purpose is chosen.
           </p>
           <MotionLink to="/about"
             initial="rest" whileHover="hover" whileTap={tapScaleSm}

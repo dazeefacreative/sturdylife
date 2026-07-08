@@ -32,6 +32,7 @@ import AdminProducts   from "@/app/pages/admin/ProductsPage";
 import ProductFormPage from "@/app/pages/admin/ProductFormPage";
 import AdminOrders     from "@/app/pages/admin/OrdersPage";
 import AdminCustomers  from "@/app/pages/admin/CustomersPage";
+import SiteSettingsPage from "@/app/pages/admin/SiteSettingsPage";
 
 import "@/styles/tailwind.css";
 import "@/styles/fonts.css";
@@ -93,6 +94,7 @@ function AppRoutes() {
         <Route path="products/:id/edit" element={<ProductFormPage />} />
         <Route path="orders"            element={<AdminOrders />} />
         <Route path="customers"         element={<AdminCustomers />} />
+        <Route path="settings"          element={<SiteSettingsPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

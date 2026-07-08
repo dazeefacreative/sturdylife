@@ -46,7 +46,7 @@ export default function LoginPage() {
       {/* Left image panel */}
       <div className="hidden md:block w-1/2 relative overflow-hidden bg-muted">
         <img src="https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?w=900&h=1200&fit=crop&auto=format"
-          alt="" className="absolute inset-0 w-full h-full object-cover grayscale" />
+          alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/30" />
         <MotionLink to="/" initial="rest" whileHover="hover" variants={fadeHoverVariants}
           className="absolute top-8 left-8 text-white text-xs tracking-widest uppercase">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router";
-import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, Image, LogOut, Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
 import { MotionButton, tapScaleSm } from "@/app/components/motion/primitives";
@@ -10,6 +10,7 @@ const nav = [
   { to: "/admin/products",  label: "Products",  icon: Package },
   { to: "/admin/orders",    label: "Orders",    icon: ShoppingBag },
   { to: "/admin/customers", label: "Customers", icon: Users },
+  { to: "/admin/settings",  label: "Site Content", icon: Image },
 ];
 
 const itemRestInactive = { backgroundColor: "rgba(0,0,0,0)", color: "var(--muted-foreground)" };

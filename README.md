@@ -5,7 +5,7 @@
 ### 1. Database
 - Start MySQL (XAMPP / WAMP / Homebrew)
 - Create database: `sturdy_life`
-- Run: `backend/schema.sql` in phpMyAdmin or MySQL CLI
+- Uncomment the `CREATE DATABASE` / `USE` lines at the top of `backend/schema.sql`, then run it in phpMyAdmin or MySQL CLI
 
 ### 2. Backend
 ```bash
@@ -60,3 +60,6 @@ bcrypt.hash('Admin1234!', 12).then(hash => {
 - Number: `4084084084084081`
 - Expiry: Any future date
 - CVV: Any 3 digits
+
+## Production Deployment
+Hosted on Namecheap (cPanel) — frontend static build + backend Node/Passenger app + MySQL. See [NAMECHEAP_DEPLOY.md](NAMECHEAP_DEPLOY.md) for the full step-by-step.

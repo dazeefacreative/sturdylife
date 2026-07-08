@@ -1,10 +1,18 @@
 -- ============================================================
 -- STURDY LIFE — Full Database Schema
--- Run this in cPanel > phpMyAdmin or MySQL CLI
+--
+-- Local dev (MySQL CLI / phpMyAdmin with no DB selected yet):
+--   uncomment the CREATE DATABASE + USE lines below.
+--
+-- cPanel / Namecheap production:
+--   create the database + user first via cPanel > MySQL Databases
+--   (cPanel prefixes both with your username), then select that database
+--   in phpMyAdmin and import this file as-is — leave the two lines commented,
+--   since cPanel database users can't run CREATE DATABASE.
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS sturdy_life CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE sturdy_life;
+-- CREATE DATABASE IF NOT EXISTS sturdy_life CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- USE sturdy_life;
 
 -- ─────────────────────────────────────────
 -- USERS

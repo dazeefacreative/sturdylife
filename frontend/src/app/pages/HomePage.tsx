@@ -111,7 +111,7 @@ export default function HomePage() {
     const params: Record<string, string> = { limit: "6" };
     if (activeFilter) params.category = activeFilter;
     api.get("/products", { params })
-      .then(({ data }) => setProducts(data.products))
+      .then(({ data }) => setProducts(data.products || []))
       .catch(() => setProducts([]))
       .finally(() => setLoadingProducts(false));
   }, [activeFilter]);

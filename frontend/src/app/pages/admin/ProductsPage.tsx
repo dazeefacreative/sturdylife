@@ -29,7 +29,7 @@ export default function AdminProductsPage() {
 
   const load = () => {
     api.get("/admin/products")
-      .then(({ data }) => setProducts(data.products))
+      .then(({ data }) => setProducts(data.products || []))
       .finally(() => setLoading(false));
   };
 

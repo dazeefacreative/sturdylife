@@ -96,7 +96,7 @@ export default function ShopPage() {
 
     api.get("/products", { params })
       .then(({ data }) => {
-        setProducts((prev) => page === 1 ? data.products : [...prev, ...data.products]);
+        setProducts((prev) => page === 1 ? (data.products || []) : [...prev, ...(data.products || [])]);
         setTotal(data.total);
         setPages(data.pages);
       })

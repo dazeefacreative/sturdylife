@@ -73,7 +73,7 @@ export default function ProductPage() {
   useEffect(() => {
     if (!product?.category_slug) { setRelated([]); return; }
     api.get("/products", { params: { category: product.category_slug, limit: 5 } })
-      .then(({ data }) => setRelated(data.products.filter((p: any) => p.id !== product.id).slice(0, 4)))
+      .then(({ data }) => setRelated((data.products || []).filter((p: any) => p.id !== product.id).slice(0, 4)))
       .catch(() => setRelated([]));
   }, [product]);
 

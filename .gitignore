@@ -4,5 +4,6 @@ dist/
 .env.local
 backend/uploads/*
 !backend/uploads/.gitkeep
+backend/debug-env.json
 *.log
 .DS_Store

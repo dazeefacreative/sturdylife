@@ -15,7 +15,9 @@ deployment:
     - rm -rf /home/sturxitc/sturdylife-api/frontend/node_modules
     - cd /home/sturxitc/sturdylife-api/frontend && VITE_API_URL=https://api.sturdylifer.com/api $REALNPM install
     - cd /home/sturxitc/sturdylife-api/frontend && VITE_API_URL=https://api.sturdylifer.com/api $REALNPM run build
-    - /bin/cp -r /home/sturxitc/sturdylife-api/frontend/dist/* /home/sturxitc/public_html/
+    # trailing "/." (not "/*") so dotfiles like .htaccess get copied too —
+    # bash globs don't match dotfiles by default.
+    - /bin/cp -r /home/sturxitc/sturdylife-api/frontend/dist/. /home/sturxitc/public_html/
 
     - /bin/mkdir -p /home/sturxitc/sturdylife-api/backend/tmp
     - /bin/touch /home/sturxitc/sturdylife-api/backend/tmp/restart.txt

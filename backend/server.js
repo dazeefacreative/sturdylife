@@ -5,6 +5,14 @@ const path = require("path");
 
 const app = express();
 
+// ─── Safety net ──────────────────────────────────────────────
+// A rejected promise inside an async route handler that isn't
+// try/caught (Express 4 doesn't auto-catch those) would otherwise
+// crash the whole Node process on some Node versions. Log instead.
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection:", reason);
+});
+
 // ─── CORS ────────────────────────────────────────────────────
 const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
   .split(",")

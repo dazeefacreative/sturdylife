@@ -337,7 +337,7 @@ export default function SiteSettingsPage() {
             </p>
 
             {(preview || current) && (
-              <div className="w-40 aspect-square bg-muted overflow-hidden mb-4">
+              <div className={`w-48 ${cat.ratio === 1 ? "aspect-square" : "aspect-[3/1]"} h-40 bg-muted overflow-hidden mb-4`}>
                 <img src={preview || getImageUrl(current)} alt="" className="w-full h-full object-cover" />
               </div>
             )}

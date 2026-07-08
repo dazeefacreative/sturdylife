@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Upload } from "lucide-react";
+import { Upload, X, ChevronUp, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/media";
-import { MotionButton, tapScale } from "@/app/components/motion/primitives";
+import { MotionButton, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 const uploadLabelVariants = {
@@ -19,12 +19,15 @@ const submitButtonVariants = {
 const MAX_VIDEO_SIZE = 5 * 1024 * 1024;
 const MAX_IMAGE_SIZE = 200 * 1024;
 const RATIO_TOLERANCE = 0.08;
+const MAX_ABOUT_IMAGES = 4;
 
 const CATEGORY_CONFIG = [
   { slug: "hoodies", label: "Hoodies", ratio: 1, ratioLabel: "square (1:1)" },
   { slug: "beanie-caps", label: "Beanie Caps", ratio: 3, ratioLabel: "wide banner (3:1)" },
   { slug: "shirts", label: "Shirts", ratio: 3, ratioLabel: "wide banner (3:1)" },
 ];
+
+interface AboutImage { id: number; image_url: string; }
 
 function readImageDims(file: File): Promise<{ w: number; h: number }> {
   return new Promise((resolve, reject) => {
@@ -50,6 +53,9 @@ function readVideoDims(file: File): Promise<{ w: number; h: number }> {
 export default function SiteSettingsPage() {
   useDocumentTitle("Admin · Site Content");
 
+  const [loading, setLoading] = useState(true);
+
+  // Hero video
   const [heroVideoUrl, setHeroVideoUrl] = useState<string | null>(null);
   const [heroVideoFile, setHeroVideoFile] = useState<File | null>(null);
   const [heroPreview, setHeroPreview] = useState<string | null>(null);
@@ -57,23 +63,30 @@ export default function SiteSettingsPage() {
   const [heroSuccess, setHeroSuccess] = useState(false);
   const [heroSaving, setHeroSaving] = useState(false);
 
-  const [categoryImages, setCategoryImages] = useState<Record<string, string[]>>({});
-  const [pendingFiles, setPendingFiles] = useState<Record<string, File[]>>({});
-  const [pendingPreviews, setPendingPreviews] = useState<Record<string, string[]>>({});
+  // Category images (1 per category)
+  const [categoryImages, setCategoryImages] = useState<Record<string, string | null>>({});
+  const [categoryPendingFile, setCategoryPendingFile] = useState<Record<string, File | null>>({});
+  const [categoryPendingPreview, setCategoryPendingPreview] = useState<Record<string, string | null>>({});
   const [categoryErrors, setCategoryErrors] = useState<Record<string, string>>({});
   const [categorySuccess, setCategorySuccess] = useState<Record<string, boolean>>({});
   const [categorySaving, setCategorySaving] = useState<Record<string, boolean>>({});
-  const [loading, setLoading] = useState(true);
+
+  // About slideshow
+  const [aboutImages, setAboutImages] = useState<AboutImage[]>([]);
+  const [aboutError, setAboutError] = useState("");
+  const [aboutSaving, setAboutSaving] = useState(false);
 
   useEffect(() => {
     api.get("/settings")
       .then(({ data }) => {
         setHeroVideoUrl(data.hero_video_url || null);
         setCategoryImages(data.categoryImages || {});
+        setAboutImages(data.aboutImages || []);
       })
       .finally(() => setLoading(false));
   }, []);
 
+  // ─── Hero video ────────────────────────────────────────────
   const handleHeroFile = async (file: File | null) => {
     setHeroError("");
     setHeroSuccess(false);
@@ -121,60 +134,101 @@ export default function SiteSettingsPage() {
     }
   };
 
-  const handleCategoryFiles = async (slug: string, ratio: number, ratioLabel: string, files: FileList | null) => {
+  // ─── Category image (1 per category) ──────────────────────
+  const handleCategoryFile = async (slug: string, ratio: number, ratioLabel: string, file: File | null) => {
     setCategoryErrors((prev) => ({ ...prev, [slug]: "" }));
     setCategorySuccess((prev) => ({ ...prev, [slug]: false }));
-    if (!files || !files.length) return;
+    if (!file) return;
 
-    const arr = Array.from(files);
-    if (arr.length !== 3) {
-      setCategoryErrors((prev) => ({ ...prev, [slug]: "Select exactly 3 images." }));
+    if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
+      setCategoryErrors((prev) => ({ ...prev, [slug]: "Only jpg, png, or webp images are allowed." }));
       return;
     }
-    for (const file of arr) {
-      if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
-        setCategoryErrors((prev) => ({ ...prev, [slug]: "Only jpg, png, or webp images are allowed." }));
-        return;
-      }
-      if (file.size > MAX_IMAGE_SIZE) {
-        setCategoryErrors((prev) => ({ ...prev, [slug]: `Each image must be 200KB or smaller (${file.name} is ${(file.size / 1024).toFixed(0)}KB).` }));
-        return;
-      }
+    if (file.size > MAX_IMAGE_SIZE) {
+      setCategoryErrors((prev) => ({ ...prev, [slug]: `Image must be 200KB or smaller (this file is ${(file.size / 1024).toFixed(0)}KB).` }));
+      return;
     }
     try {
-      for (const file of arr) {
-        const { w, h } = await readImageDims(file);
-        const actual = w / h;
-        if (Math.abs(actual - ratio) > RATIO_TOLERANCE) {
-          setCategoryErrors((prev) => ({ ...prev, [slug]: `${file.name} must be ${ratioLabel} — got ${w}x${h}.` }));
-          return;
-        }
+      const { w, h } = await readImageDims(file);
+      const actual = w / h;
+      if (Math.abs(actual - ratio) > RATIO_TOLERANCE) {
+        setCategoryErrors((prev) => ({ ...prev, [slug]: `Image must be ${ratioLabel} — got ${w}x${h}.` }));
+        return;
       }
     } catch {
-      setCategoryErrors((prev) => ({ ...prev, [slug]: "Could not read one of the images." }));
+      setCategoryErrors((prev) => ({ ...prev, [slug]: "Could not read this image." }));
       return;
     }
-    setPendingFiles((prev) => ({ ...prev, [slug]: arr }));
-    setPendingPreviews((prev) => ({ ...prev, [slug]: arr.map((f) => URL.createObjectURL(f)) }));
+    setCategoryPendingFile((prev) => ({ ...prev, [slug]: file }));
+    setCategoryPendingPreview((prev) => ({ ...prev, [slug]: URL.createObjectURL(file) }));
   };
 
-  const submitCategoryImages = async (slug: string) => {
-    const files = pendingFiles[slug];
-    if (!files || files.length !== 3) return;
+  const submitCategoryImage = async (slug: string) => {
+    const file = categoryPendingFile[slug];
+    if (!file) return;
     setCategorySaving((prev) => ({ ...prev, [slug]: true }));
     setCategoryErrors((prev) => ({ ...prev, [slug]: "" }));
     try {
       const fd = new FormData();
-      files.forEach((f) => fd.append("images", f));
+      fd.append("image", file);
       const { data } = await api.put(`/settings/category-images/${slug}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
-      setCategoryImages((prev) => ({ ...prev, [slug]: data.images }));
-      setPendingFiles((prev) => ({ ...prev, [slug]: [] }));
-      setPendingPreviews((prev) => ({ ...prev, [slug]: [] }));
+      setCategoryImages((prev) => ({ ...prev, [slug]: data.image_url }));
+      setCategoryPendingFile((prev) => ({ ...prev, [slug]: null }));
+      setCategoryPendingPreview((prev) => ({ ...prev, [slug]: null }));
       setCategorySuccess((prev) => ({ ...prev, [slug]: true }));
     } catch (err: any) {
       setCategoryErrors((prev) => ({ ...prev, [slug]: err.response?.data?.error || "Upload failed" }));
     } finally {
       setCategorySaving((prev) => ({ ...prev, [slug]: false }));
+    }
+  };
+
+  // ─── About slideshow (up to 4, add/remove/reorder) ────────
+  const handleAboutFile = async (file: File | null) => {
+    setAboutError("");
+    if (!file) return;
+    if (aboutImages.length >= MAX_ABOUT_IMAGES) {
+      setAboutError(`You can upload up to ${MAX_ABOUT_IMAGES} images. Remove one first.`);
+      return;
+    }
+    if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
+      setAboutError("Only jpg, png, or webp images are allowed.");
+      return;
+    }
+    setAboutSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const { data } = await api.post("/settings/about-images", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      setAboutImages((prev) => [...prev, { id: data.id, image_url: data.image_url }]);
+    } catch (err: any) {
+      setAboutError(err.response?.data?.error || "Upload failed");
+    } finally {
+      setAboutSaving(false);
+    }
+  };
+
+  const removeAboutImage = async (id: number) => {
+    const prevImages = aboutImages;
+    setAboutImages((prev) => prev.filter((img) => img.id !== id));
+    try {
+      await api.delete(`/settings/about-images/${id}`);
+    } catch (err: any) {
+      setAboutImages(prevImages);
+      setAboutError(err.response?.data?.error || "Failed to remove image");
+    }
+  };
+
+  const moveAboutImage = async (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= aboutImages.length) return;
+    const reordered = [...aboutImages];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    setAboutImages(reordered);
+    try {
+      await api.put("/settings/about-images/reorder", { order: reordered.map((img) => img.id) });
+    } catch (err: any) {
+      setAboutError(err.response?.data?.error || "Failed to reorder images");
     }
   };
 
@@ -227,69 +281,103 @@ export default function SiteSettingsPage() {
         )}
       </section>
 
-      {/* Category slideshow images */}
+      {/* Category images */}
       {CATEGORY_CONFIG.map((cat) => {
-        const current = categoryImages[cat.slug] || [];
-        const previews = pendingPreviews[cat.slug] || [];
+        const current = categoryImages[cat.slug];
+        const preview = categoryPendingPreview[cat.slug];
         const error = categoryErrors[cat.slug];
         const success = categorySuccess[cat.slug];
         const saving = categorySaving[cat.slug];
-        const hasPending = (pendingFiles[cat.slug]?.length || 0) === 3;
+        const hasPending = !!categoryPendingFile[cat.slug];
 
         return (
           <section key={cat.slug} className="mb-12">
             <h2 className="text-[10px] tracking-widest uppercase font-bold mb-4 border-b border-border pb-2">
-              {cat.label} — Shop by Category Slideshow
+              {cat.label} — Shop by Category Image
             </h2>
-            <p className="text-xs text-muted-foreground mb-1">
-              Upload exactly 3 images, each {cat.ratioLabel}, max 200KB. They auto-rotate every 3 seconds on the homepage.
-            </p>
             <p className="text-xs text-muted-foreground mb-4">
-              Tip: images with a dark background display best in this section.
+              {cat.ratioLabel}, max 200KB.
             </p>
 
-            {current.length > 0 && previews.length === 0 && (
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                {current.map((url) => (
-                  <div key={url} className="relative aspect-square bg-muted overflow-hidden">
-                    <img src={getImageUrl(url)} alt="" className="w-full h-full object-cover" />
-                  </div>
-                ))}
+            {(preview || current) && (
+              <div className="w-40 aspect-square bg-muted overflow-hidden mb-4">
+                <img src={preview || getImageUrl(current)} alt="" className="w-full h-full object-cover" />
               </div>
             )}
 
             <motion.label initial="rest" whileHover="hover" variants={uploadLabelVariants}
               className="flex flex-col items-center justify-center border-2 border-dashed p-8 cursor-pointer">
               <Upload size={20} className="text-muted-foreground mb-2" />
-              <span className="text-xs text-muted-foreground">Click to select 3 images</span>
-              <input type="file" accept="image/*" multiple className="hidden"
-                onChange={(e) => handleCategoryFiles(cat.slug, cat.ratio, cat.ratioLabel, e.target.files)} />
+              <span className="text-xs text-muted-foreground">Click to upload a new image</span>
+              <input type="file" accept="image/*" className="hidden"
+                onChange={(e) => handleCategoryFile(cat.slug, cat.ratio, cat.ratioLabel, e.target.files?.[0] || null)} />
             </motion.label>
 
-            {previews.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mt-4">
-                {previews.map((src, i) => (
-                  <div key={i} className="relative aspect-square bg-muted overflow-hidden">
-                    <img src={src} alt="" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-            )}
-
             {error && <p className="text-red-500 text-xs mt-3">{error}</p>}
-            {success && <p className="text-green-600 text-xs mt-3">{cat.label} images updated.</p>}
+            {success && <p className="text-green-600 text-xs mt-3">{cat.label} image updated.</p>}
 
             {hasPending && (
-              <MotionButton type="button" onClick={() => submitCategoryImages(cat.slug)} disabled={saving}
+              <MotionButton type="button" onClick={() => submitCategoryImage(cat.slug)} disabled={saving}
                 initial="rest" whileHover={saving ? undefined : "hover"} whileTap={saving ? undefined : tapScale}
                 variants={submitButtonVariants}
                 className="mt-4 text-primary-foreground py-3 px-8 text-xs tracking-widest uppercase font-semibold disabled:opacity-50">
-                {saving ? "Uploading…" : `Save ${cat.label} Images`}
+                {saving ? "Uploading…" : `Save ${cat.label} Image`}
               </MotionButton>
             )}
           </section>
         );
       })}
+
+      {/* About section slideshow */}
+      <section className="mb-12">
+        <h2 className="text-[10px] tracking-widest uppercase font-bold mb-4 border-b border-border pb-2">
+          About Section Slideshow
+        </h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          Up to {MAX_ABOUT_IMAGES} images, auto-rotating every 3 seconds in "The Sturdy Edit" band. Use the arrows to reorder.
+        </p>
+
+        {aboutImages.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+            {aboutImages.map((img, i) => (
+              <div key={img.id} className="relative aspect-[4/5] bg-muted overflow-hidden group">
+                <img src={getImageUrl(img.image_url)} alt="" className="w-full h-full object-cover" />
+                <MotionButton type="button" onClick={() => removeAboutImage(img.id)}
+                  whileTap={tapScaleSm}
+                  className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/60 text-white">
+                  <X size={12} />
+                </MotionButton>
+                <div className="absolute bottom-1 left-1 flex gap-1">
+                  <MotionButton type="button" onClick={() => moveAboutImage(i, -1)} disabled={i === 0}
+                    whileTap={tapScaleSm}
+                    className="w-6 h-6 flex items-center justify-center bg-black/60 text-white disabled:opacity-30">
+                    <ChevronUp size={12} />
+                  </MotionButton>
+                  <MotionButton type="button" onClick={() => moveAboutImage(i, 1)} disabled={i === aboutImages.length - 1}
+                    whileTap={tapScaleSm}
+                    className="w-6 h-6 flex items-center justify-center bg-black/60 text-white disabled:opacity-30">
+                    <ChevronDown size={12} />
+                  </MotionButton>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {aboutImages.length < MAX_ABOUT_IMAGES && (
+          <motion.label initial="rest" whileHover="hover" variants={uploadLabelVariants}
+            className="flex flex-col items-center justify-center border-2 border-dashed p-8 cursor-pointer">
+            <Upload size={20} className="text-muted-foreground mb-2" />
+            <span className="text-xs text-muted-foreground">
+              {aboutSaving ? "Uploading…" : `Click to add an image (${aboutImages.length}/${MAX_ABOUT_IMAGES})`}
+            </span>
+            <input type="file" accept="image/*" className="hidden" disabled={aboutSaving}
+              onChange={(e) => handleAboutFile(e.target.files?.[0] || null)} />
+          </motion.label>
+        )}
+
+        {aboutError && <p className="text-red-500 text-xs mt-3">{aboutError}</p>}
+      </section>
     </div>
   );
 }

@@ -20,7 +20,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 200 * 1024 }, // 200KB max per image
+  limits: { fileSize: 200 * 1024 }, // 200KB max
 });
 
 // hoodies are square (1:1); beanie caps and shirts are wide banners (3:1)
@@ -31,36 +31,30 @@ const ASPECT_RULES = {
 };
 const TOLERANCE = 0.08;
 
-// Middleware that runs after multer: validates every file's aspect ratio
-// against the category's rule (all-or-nothing), then compresses to WebP.
-const processCategoryImages = async (req, res, next) => {
-  if (!req.files || !req.files.length) return next();
+// Middleware that runs after multer: validates the file's aspect ratio
+// against the category's rule, then compresses it to WebP.
+const processCategoryImage = async (req, res, next) => {
+  if (!req.file) return next();
 
   const rule = ASPECT_RULES[req.params.slug];
   if (!rule) return res.status(400).json({ error: "Unknown category" });
 
   try {
-    const metas = await Promise.all(req.files.map((f) => sharp(f.buffer).metadata()));
-
-    for (let i = 0; i < req.files.length; i++) {
-      const { width, height } = metas[i];
-      const actualRatio = width / height;
-      if (Math.abs(actualRatio - rule.ratio) > TOLERANCE) {
-        return res.status(400).json({
-          error: `Image ${i + 1} must be ${rule.label} — got ${width}x${height}.`,
-        });
-      }
+    const { width, height } = await sharp(req.file.buffer).metadata();
+    const actualRatio = width / height;
+    if (Math.abs(actualRatio - rule.ratio) > TOLERANCE) {
+      return res.status(400).json({
+        error: `Image must be ${rule.label} — got ${width}x${height}.`,
+      });
     }
 
-    for (const file of req.files) {
-      const filename = `${crypto.randomBytes(16).toString("hex")}.webp`;
-      const dest      = path.join(uploadDir, filename);
+    const filename = `${crypto.randomBytes(16).toString("hex")}.webp`;
+    const dest      = path.join(uploadDir, filename);
 
-      await sharp(file.buffer).webp({ quality: 82 }).toFile(dest);
+    await sharp(req.file.buffer).webp({ quality: 82 }).toFile(dest);
 
-      file.filename = filename;
-      file.path     = dest;
-    }
+    req.file.filename = filename;
+    req.file.path     = dest;
     next();
   } catch (err) {
     console.error("Category image processing error:", err);
@@ -69,9 +63,9 @@ const processCategoryImages = async (req, res, next) => {
 };
 
 // Convenience: returns [multer middleware, processor] as an array for use in routes
-upload.withValidation = (fieldName, maxCount) => [
-  upload.array(fieldName, maxCount),
-  processCategoryImages,
+upload.withValidation = (fieldName) => [
+  upload.single(fieldName),
+  processCategoryImage,
 ];
 
 module.exports = upload;

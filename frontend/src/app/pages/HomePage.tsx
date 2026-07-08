@@ -59,7 +59,7 @@ const filterPillVariants = {
   hover: { backgroundColor: "#0f172a", color: "#ffffff" },
 };
 
-function CategorySlideshow({ images, alt, imgClassName }: { images: string[]; alt: string; imgClassName?: string }) {
+function Slideshow({ images, alt, imgClassName }: { images: string[]; alt: string; imgClassName?: string }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -97,11 +97,12 @@ export default function HomePage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [heroVideoUrl, setHeroVideoUrl] = useState<string | null>(null);
-  const [categoryImages, setCategoryImages] = useState<Record<string, string[]>>({});
+  const [categoryImages, setCategoryImages] = useState<Record<string, string | null>>({});
+  const [aboutImages, setAboutImages] = useState<string[]>([]);
 
   const categories = categoryDefaults.map((c) => ({
     ...c,
-    images: categoryImages[c.slug]?.length ? categoryImages[c.slug].map((u) => getImageUrl(u)!) : [c.image],
+    image: categoryImages[c.slug] ? getImageUrl(categoryImages[c.slug])! : c.image,
   }));
 
   useEffect(() => {
@@ -119,6 +120,7 @@ export default function HomePage() {
       .then(({ data }) => {
         setHeroVideoUrl(data.hero_video_url || null);
         setCategoryImages(data.categoryImages || {});
+        setAboutImages((data.aboutImages || []).map((img: { image_url: string }) => img.image_url));
       })
       .catch(() => {});
   }, []);
@@ -213,8 +215,8 @@ export default function HomePage() {
               initial="rest" whileHover="hover"
               className="group relative overflow-hidden bg-muted cursor-pointer row-span-2 col-span-1" style={{ minHeight: 520 }}
               onClick={() => navigate(`/shop/${categories[0].slug}`)}>
-              <CategorySlideshow images={categories[0].images} alt={categories[0].name}
-                imgClassName="transition-transform duration-700 group-hover:scale-105" />
+              <img src={categories[0].image} alt={categories[0].name}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <motion.div variants={categoryOverlayVariants} transition={{ duration: 0.5 }} className="absolute inset-0 pointer-events-none" />
               <div className="absolute bottom-6 left-6">
                 <p className="text-white/60 text-[10px] tracking-widest uppercase mb-1">{categories[0].subtitle}</p>
@@ -226,8 +228,8 @@ export default function HomePage() {
                 initial="rest" whileHover="hover"
                 className="group relative overflow-hidden bg-muted cursor-pointer col-span-1 md:col-span-2" style={{ minHeight: 250 }}
                 onClick={() => navigate(`/shop/${cat.slug}`)}>
-                <CategorySlideshow images={cat.images} alt={cat.name}
-                  imgClassName="transition-transform duration-700 group-hover:scale-105" />
+                <img src={cat.image} alt={cat.name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <motion.div variants={categoryOverlayVariants} transition={{ duration: 0.5 }} className="absolute inset-0 pointer-events-none" />
                 <div className="absolute bottom-6 left-6">
                   <p className="text-white/60 text-[10px] tracking-widest uppercase mb-1">{cat.subtitle}</p>
@@ -334,9 +336,9 @@ export default function HomePage() {
       {/* Editorial band */}
       <section className="grid md:grid-cols-2 min-h-[500px]">
         <div className="relative overflow-hidden bg-muted min-h-[300px] md:min-h-0">
-          <img src={editorialShoot2}
-            alt="Male model in black Sturdy Life jacket"
-            className="absolute inset-0 w-full h-full object-cover" />
+          <Slideshow
+            images={aboutImages.length ? aboutImages.map((u) => getImageUrl(u)!) : [editorialShoot2]}
+            alt="Sturdy Life" />
         </div>
         <Reveal className="bg-foreground text-primary-foreground flex flex-col justify-center px-10 md:px-16 py-16 md:py-24">
           <p className="text-white/40 text-[10px] tracking-[0.3em] uppercase mb-6">The Sturdy Edit</p>

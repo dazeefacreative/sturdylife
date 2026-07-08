@@ -61,19 +61,20 @@ const filterPillVariants = {
 
 function Slideshow({ images, alt, imgClassName }: { images: string[]; alt: string; imgClassName?: string }) {
   const [index, setIndex] = useState(0);
+  const safeImages = images.length ? images : [editorialShoot2];
 
   useEffect(() => {
     setIndex(0);
-    if (images.length <= 1) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % images.length), 3000);
+    if (safeImages.length <= 1) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % safeImages.length), 3000);
     return () => clearInterval(id);
-  }, [images]);
+  }, [safeImages]);
 
   return (
     <AnimatePresence>
       <motion.img
-        key={images[index]}
-        src={images[index]}
+        key={safeImages[index]}
+        src={safeImages[index]}
         alt={alt}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -339,7 +340,7 @@ export default function HomePage() {
       <section className="grid md:grid-cols-2 min-h-[500px]">
         <div className="relative overflow-hidden bg-muted min-h-[300px] md:min-h-0">
           <Slideshow
-            images={aboutImages.length ? aboutImages.map((u) => getImageUrl(u)!) : [editorialShoot2]}
+            images={aboutImages.map((u) => getImageUrl(u)!)}
             alt="Sturdy Life" />
         </div>
         <Reveal className="bg-foreground text-primary-foreground flex flex-col justify-center px-10 md:px-16 py-16 md:py-24">

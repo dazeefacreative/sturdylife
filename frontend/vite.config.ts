@@ -21,6 +21,12 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  // Temporary — makes production error stack traces readable in DevTools
+  // instead of pointing at minified bundle positions. Remove once the
+  // current crash is diagnosed and fixed.
+  build: {
+    sourcemap: true,
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

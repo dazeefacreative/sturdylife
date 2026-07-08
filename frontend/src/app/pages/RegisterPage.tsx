@@ -25,7 +25,7 @@ export default function RegisterPage() {
     setLoading(true); setError("");
     try {
       await register(form);
-      navigate("/account");
+      navigate("/shop");
     } catch (err: any) {
       setError(err.response?.data?.error || "Registration failed.");
     } finally { setLoading(false); }

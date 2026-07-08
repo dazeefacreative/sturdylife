@@ -75,6 +75,8 @@ export default function SiteSettingsPage() {
   const [aboutImages, setAboutImages] = useState<AboutImage[]>([]);
   const [aboutError, setAboutError] = useState("");
   const [aboutSaving, setAboutSaving] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     api.get("/settings")
@@ -226,11 +228,7 @@ export default function SiteSettingsPage() {
     }
   };
 
-  const moveAboutImage = async (index: number, direction: -1 | 1) => {
-    const target = index + direction;
-    if (target < 0 || target >= aboutImages.length) return;
-    const reordered = [...aboutImages];
-    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+  const persistAboutOrder = async (reordered: AboutImage[]) => {
     setAboutImages(reordered);
     try {
       await api.put("/settings/about-images/reorder", { order: reordered.map((img) => img.id) });
@@ -238,6 +236,33 @@ export default function SiteSettingsPage() {
       setAboutError(err.response?.data?.error || "Failed to reorder images");
     }
   };
+
+  const moveAboutImage = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= aboutImages.length) return;
+    const reordered = [...aboutImages];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    persistAboutOrder(reordered);
+  };
+
+  const handleDragStart = (index: number) => setDragIndex(index);
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragIndex !== null && index !== dragOverIndex) setDragOverIndex(index);
+  };
+
+  const handleDrop = (index: number) => {
+    if (dragIndex === null || dragIndex === index) { setDragIndex(null); setDragOverIndex(null); return; }
+    const reordered = [...aboutImages];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(index, 0, moved);
+    persistAboutOrder(reordered);
+    setDragIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => { setDragIndex(null); setDragOverIndex(null); };
 
   if (loading) {
     return (
@@ -341,14 +366,22 @@ export default function SiteSettingsPage() {
           About Section Slideshow
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
-          Up to {MAX_ABOUT_IMAGES} images, auto-rotating every 3 seconds in "The Sturdy Edit" band. Use the arrows to reorder.
+          Up to {MAX_ABOUT_IMAGES} images, auto-rotating every 3 seconds in "The Sturdy Edit" band. Drag to reorder, or use the arrows.
         </p>
 
         {aboutImages.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
             {aboutImages.map((img, i) => (
-              <div key={img.id} className="relative aspect-[4/5] bg-muted overflow-hidden group">
-                <img src={getImageUrl(img.image_url)} alt="" className="w-full h-full object-cover" />
+              <div key={img.id}
+                draggable
+                onDragStart={() => handleDragStart(i)}
+                onDragOver={(e) => handleDragOver(e, i)}
+                onDrop={() => handleDrop(i)}
+                onDragEnd={handleDragEnd}
+                className={`relative aspect-[4/5] bg-muted overflow-hidden group cursor-grab active:cursor-grabbing transition-opacity
+                  ${dragIndex === i ? "opacity-40" : ""}
+                  ${dragOverIndex === i && dragIndex !== null && dragIndex !== i ? "ring-2 ring-foreground" : ""}`}>
+                <img src={getImageUrl(img.image_url)} alt="" draggable={false} className="w-full h-full object-cover pointer-events-none" />
                 <MotionButton type="button" onClick={() => removeAboutImage(img.id)}
                   whileTap={tapScaleSm}
                   className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/60 text-white">

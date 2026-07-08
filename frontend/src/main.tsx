@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router";
 import { AuthProvider, useAuth } from "@/app/context/AuthContext";
 import { CartProvider } from "@/app/context/CartContext";
+import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 
 import HomePage        from "@/app/pages/HomePage";
 import ShopPage        from "@/app/pages/ShopPage";
@@ -105,12 +106,14 @@ function AppRoutes() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <AppRoutes />
-        </CartProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <CartProvider>
+            <AppRoutes />
+          </CartProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </StrictMode>
 );

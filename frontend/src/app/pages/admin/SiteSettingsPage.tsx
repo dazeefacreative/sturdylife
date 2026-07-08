@@ -122,13 +122,20 @@ export default function SiteSettingsPage() {
     try {
       const fd = new FormData();
       fd.append("video", heroVideoFile);
-      const { data } = await api.put("/settings/hero-video", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      const { data } = await api.put("/settings/hero-video", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 60000, // videos take longer to upload/process than the client's default timeout
+      });
       setHeroVideoUrl(data.hero_video_url);
       setHeroVideoFile(null);
       setHeroPreview(null);
       setHeroSuccess(true);
     } catch (err: any) {
-      setHeroError(err.response?.data?.error || "Upload failed");
+      if (err.code === "ECONNABORTED") {
+        setHeroError("The upload timed out, but it may have finished on the server — reload the page to check before retrying.");
+      } else {
+        setHeroError(err.response?.data?.error || "Upload failed");
+      }
     } finally {
       setHeroSaving(false);
     }

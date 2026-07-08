@@ -60,7 +60,8 @@ export default function CartPage() {
                 <MotionLink to={`/product/${item.slug}`} whileTap={tapScaleSm} className="shrink-0">
                   <div className="w-24 h-32 bg-secondary overflow-hidden">
                     <img src={getImageUrl(item.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop"}
-                      alt={item.name} className="w-full h-full object-cover" />
+                      alt={item.name} draggable={false} onContextMenu={(e) => e.preventDefault()}
+                      className="w-full h-full object-cover protected-img" />
                   </div>
                 </MotionLink>
 

@@ -23,6 +23,7 @@ const uploadLabelVariants = {
 };
 
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 
 interface SizeStock { size: string; stock: number; }
 interface ExistingImage { id: number; image_url: string; is_primary: boolean | number; }
@@ -76,8 +77,14 @@ export default function ProductFormPage() {
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
+    setError("");
     const remainingSlots = Math.max(0, 8 - existingImages.length - images.length);
-    const arr = Array.from(files).slice(0, remainingSlots);
+    const candidates = Array.from(files).slice(0, remainingSlots);
+    const oversized = candidates.filter((f) => f.size > MAX_IMAGE_SIZE);
+    const arr = candidates.filter((f) => f.size <= MAX_IMAGE_SIZE);
+    if (oversized.length) {
+      setError(`${oversized.length === 1 ? "1 image was" : `${oversized.length} images were`} skipped — each must be 2MB or smaller.`);
+    }
     setImages((prev) => [...prev, ...arr]);
     setNewPreviews((prev) => [...prev, ...arr.map((f) => URL.createObjectURL(f))]);
   };
@@ -197,7 +204,7 @@ export default function ProductFormPage() {
           <motion.label initial="rest" whileHover="hover" variants={uploadLabelVariants}
             className="flex flex-col items-center justify-center border-2 border-dashed p-8 cursor-pointer">
             <Upload size={20} className="text-muted-foreground mb-2" />
-            <span className="text-xs text-muted-foreground">Click to upload images (max 8, 5MB each)</span>
+            <span className="text-xs text-muted-foreground">Click to upload images (max 8, 2MB each — auto-compressed to 500KB)</span>
             <input type="file" multiple accept="image/*" className="hidden"
               onChange={(e) => handleFiles(e.target.files)} />
           </motion.label>

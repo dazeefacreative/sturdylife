@@ -245,7 +245,9 @@ export default function ShopPage() {
                       alt={product.name}
                       variants={imageVariants}
                       transition={{ duration: 0.7 }}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      draggable={false}
+                      onContextMenu={(e) => e.preventDefault()}
+                      className="absolute inset-0 w-full h-full object-cover protected-img"
                     />
                     {product.tag && (
                       <span className="absolute top-3 left-3 bg-foreground text-primary-foreground text-[10px] tracking-widest uppercase px-2 py-1">

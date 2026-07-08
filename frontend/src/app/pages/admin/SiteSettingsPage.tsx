@@ -17,7 +17,8 @@ const submitButtonVariants = {
 };
 
 const MAX_VIDEO_SIZE = 5 * 1024 * 1024;
-const MAX_IMAGE_SIZE = 200 * 1024;
+const MAX_CATEGORY_RAW_SIZE = 2 * 1024 * 1024;
+const MAX_ABOUT_RAW_SIZE = 2 * 1024 * 1024;
 const RATIO_TOLERANCE = 0.08;
 const MAX_ABOUT_IMAGES = 4;
 
@@ -153,8 +154,8 @@ export default function SiteSettingsPage() {
       setCategoryErrors((prev) => ({ ...prev, [slug]: "Only jpg, png, or webp images are allowed." }));
       return;
     }
-    if (file.size > MAX_IMAGE_SIZE) {
-      setCategoryErrors((prev) => ({ ...prev, [slug]: `Image must be 200KB or smaller (this file is ${(file.size / 1024).toFixed(0)}KB).` }));
+    if (file.size > MAX_CATEGORY_RAW_SIZE) {
+      setCategoryErrors((prev) => ({ ...prev, [slug]: `Image must be 2MB or smaller (this file is ${(file.size / 1024 / 1024).toFixed(1)}MB).` }));
       return;
     }
     try {
@@ -202,6 +203,10 @@ export default function SiteSettingsPage() {
     }
     if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
       setAboutError("Only jpg, png, or webp images are allowed.");
+      return;
+    }
+    if (file.size > MAX_ABOUT_RAW_SIZE) {
+      setAboutError(`Image must be 2MB or smaller (this file is ${(file.size / 1024 / 1024).toFixed(1)}MB).`);
       return;
     }
     setAboutSaving(true);
@@ -284,12 +289,12 @@ export default function SiteSettingsPage() {
           Homepage Hero Video
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
-          .webm or .mp4, max 5MB, landscape orientation only.
+          .webm or .mp4, max 5MB, landscape orientation only (recommended size 2:1 aspect ratio). 
         </p>
 
         {(heroPreview || heroVideoUrl) && (
           <video src={heroPreview || getImageUrl(heroVideoUrl)} muted autoPlay loop playsInline
-            className="w-full max-h-64 object-cover bg-black mb-4" />
+            className="w-full max-h-86 object-cover bg-black mb-4" />
         )}
 
         <motion.label initial="rest" whileHover="hover" variants={uploadLabelVariants}
@@ -328,7 +333,7 @@ export default function SiteSettingsPage() {
               {cat.label} — Shop by Category Image
             </h2>
             <p className="text-xs text-muted-foreground mb-4">
-              {cat.ratioLabel}, max 200KB.
+              {cat.ratioLabel}, up to 2MB
             </p>
 
             {(preview || current) && (
@@ -367,6 +372,7 @@ export default function SiteSettingsPage() {
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
           Up to {MAX_ABOUT_IMAGES} images, auto-rotating every 3 seconds in "The Sturdy Edit" band. Drag to reorder, or use the arrows.
+          Each image can be up to 2MB and is automatically compressed to 500KB or smaller.
         </p>
 
         {aboutImages.length > 0 && (

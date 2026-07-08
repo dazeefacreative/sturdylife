@@ -140,7 +140,8 @@ export default function ProductPage() {
                       whileTap={tapScaleSm}
                       transition={{ duration: 0.2 }}
                       className="aspect-[4/5] overflow-hidden border-2">
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img src={img} alt="" draggable={false} onContextMenu={(e) => e.preventDefault()}
+                        className="w-full h-full object-cover protected-img" />
                     </motion.button>
                   );
                 })}
@@ -150,7 +151,8 @@ export default function ProductPage() {
             <div className="flex-1 aspect-[4/5] overflow-hidden bg-secondary relative">
               {allImages.map((img: string, i: number) => (
                 <img key={i} src={img} alt={i === 0 ? product.name : ""}
-                  className={`absolute inset-0 w-full h-full object-cover transition-none ${i === activeImage ? "opacity-100" : "opacity-0 pointer-events-none"}`} />
+                  draggable={false} onContextMenu={(e) => e.preventDefault()}
+                  className={`absolute inset-0 w-full h-full object-cover protected-img transition-none ${i === activeImage ? "opacity-100" : "opacity-0 pointer-events-none"}`} />
               ))}
               {product.tag && (
                 <span className="absolute top-4 left-4 bg-foreground text-primary-foreground text-[10px] tracking-widest uppercase px-2 py-1 z-10">
@@ -271,7 +273,9 @@ export default function ProductPage() {
                       alt={p.name}
                       variants={{ rest: { scale: 1 }, hover: { scale: 1.05 } }}
                       transition={{ duration: 0.7 }}
-                      className="absolute inset-0 w-full h-full object-cover" />
+                      draggable={false}
+                      onContextMenu={(e) => e.preventDefault()}
+                      className="absolute inset-0 w-full h-full object-cover protected-img" />
                   </div>
                   <h3 className="text-sm font-medium leading-snug mb-1">{p.name}</h3>
                   <div className="flex items-center justify-between gap-2">

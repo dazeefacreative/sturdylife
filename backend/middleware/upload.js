@@ -1,8 +1,8 @@
 const multer = require("multer");
-const sharp  = require("sharp");
 const fs     = require("fs");
 const path   = require("path");
 const crypto = require("crypto");
+const { compressToLimit } = require("../utils/compressImage");
 
 const uploadDir = path.join(__dirname, "../uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -21,7 +21,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB raw upload limit before compression
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB raw upload limit before compression
 });
 
 // Middleware that runs after multer: compresses each uploaded file with Sharp
@@ -34,10 +34,8 @@ const compressImages = async (req, res, next) => {
       const filename = `${name}.webp`;
       const dest     = path.join(uploadDir, filename);
 
-      await sharp(file.buffer)
-        .resize({ width: 900, withoutEnlargement: true }) // max 900px wide, never upscale
-        .webp({ quality: 82 })
-        .toFile(dest);
+      const output = await compressToLimit(file.buffer, { maxBytes: 500 * 1024, maxWidth: 900 });
+      fs.writeFileSync(dest, output);
 
       file.filename = filename;
       file.path     = dest;

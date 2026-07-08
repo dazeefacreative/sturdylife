@@ -3,6 +3,7 @@ const sharp  = require("sharp");
 const fs     = require("fs");
 const path   = require("path");
 const crypto = require("crypto");
+const { compressToLimit } = require("../utils/compressImage");
 
 const uploadDir = path.join(__dirname, "../uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -20,7 +21,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 200 * 1024 }, // 200KB max
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB raw upload limit before compression
 });
 
 // hoodies are square (1:1); beanie caps and shirts are wide banners (3:1)
@@ -32,7 +33,7 @@ const ASPECT_RULES = {
 const TOLERANCE = 0.08;
 
 // Middleware that runs after multer: validates the file's aspect ratio
-// against the category's rule, then compresses it to WebP.
+// against the category's rule, then compresses it to WebP capped at 500KB.
 const processCategoryImage = async (req, res, next) => {
   if (!req.file) return next();
 
@@ -51,7 +52,8 @@ const processCategoryImage = async (req, res, next) => {
     const filename = `${crypto.randomBytes(16).toString("hex")}.webp`;
     const dest      = path.join(uploadDir, filename);
 
-    await sharp(req.file.buffer).webp({ quality: 82 }).toFile(dest);
+    const output = await compressToLimit(req.file.buffer, { maxBytes: 500 * 1024, maxWidth: 1400 });
+    fs.writeFileSync(dest, output);
 
     req.file.filename = filename;
     req.file.path     = dest;

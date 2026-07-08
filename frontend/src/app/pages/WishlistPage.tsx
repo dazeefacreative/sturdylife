@@ -82,7 +82,8 @@ export default function WishlistPage() {
                   onClick={() => navigate(`/product/${item.slug}`)}>
                   <div className="relative overflow-hidden bg-secondary aspect-[4/5] mb-4">
                     <img src={getImageUrl(item.image) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop"}
-                      alt={item.name} className="absolute inset-0 w-full h-full object-cover" />
+                      alt={item.name} draggable={false} onContextMenu={(e) => e.preventDefault()}
+                      className="absolute inset-0 w-full h-full object-cover protected-img" />
                     {item.tag && (
                       <span className="absolute top-3 left-3 bg-foreground text-primary-foreground text-[10px] tracking-widest uppercase px-2 py-1">
                         {item.tag}

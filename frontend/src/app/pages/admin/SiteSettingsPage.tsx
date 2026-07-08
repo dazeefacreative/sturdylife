@@ -21,6 +21,8 @@ const MAX_CATEGORY_RAW_SIZE = 2 * 1024 * 1024;
 const MAX_ABOUT_RAW_SIZE = 2 * 1024 * 1024;
 const RATIO_TOLERANCE = 0.08;
 const MAX_ABOUT_IMAGES = 4;
+const ABOUT_RATIO = 3 / 2;
+const ABOUT_RATIO_LABEL = "3:2";
 
 const CATEGORY_CONFIG = [
   { slug: "hoodies", label: "Hoodies", ratio: 1, ratioLabel: "square (1:1)" },
@@ -209,6 +211,17 @@ export default function SiteSettingsPage() {
       setAboutError(`Image must be 2MB or smaller (this file is ${(file.size / 1024 / 1024).toFixed(1)}MB).`);
       return;
     }
+    try {
+      const { w, h } = await readImageDims(file);
+      const actual = w / h;
+      if (Math.abs(actual - ABOUT_RATIO) > RATIO_TOLERANCE) {
+        setAboutError(`Image must be ${ABOUT_RATIO_LABEL} — got ${w}x${h}.`);
+        return;
+      }
+    } catch {
+      setAboutError("Could not read this image.");
+      return;
+    }
     setAboutSaving(true);
     try {
       const fd = new FormData();
@@ -337,7 +350,7 @@ export default function SiteSettingsPage() {
             </p>
 
             {(preview || current) && (
-              <div className={`w-48 ${cat.ratio === 1 ? "aspect-square" : "aspect-[3/1]"} h-40 bg-muted overflow-hidden mb-4`}>
+              <div className={`h-40 max-w-full ${cat.ratio === 1 ? "aspect-square" : "aspect-[3/1]"} bg-muted overflow-hidden mb-4`}>
                 <img src={preview || getImageUrl(current)} alt="" className="w-full h-full object-cover" />
               </div>
             )}
@@ -371,8 +384,8 @@ export default function SiteSettingsPage() {
           About Section Slideshow
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
-          Up to {MAX_ABOUT_IMAGES} images, auto-rotating every 3 seconds in "The Sturdy Edit" band. Drag to reorder, or use the arrows.
-          Each image can be up to 2MB and is automatically compressed to 500KB or smaller.
+          Up to {MAX_ABOUT_IMAGES} images. Drag to reorder, or use the arrows.
+          Each image must be {ABOUT_RATIO_LABEL}, max 2MB.
         </p>
 
         {aboutImages.length > 0 && (
@@ -384,7 +397,7 @@ export default function SiteSettingsPage() {
                 onDragOver={(e) => handleDragOver(e, i)}
                 onDrop={() => handleDrop(i)}
                 onDragEnd={handleDragEnd}
-                className={`relative aspect-[4/5] bg-muted overflow-hidden group cursor-grab active:cursor-grabbing transition-opacity
+                className={`relative aspect-[3/2] bg-muted overflow-hidden group cursor-grab active:cursor-grabbing transition-opacity
                   ${dragIndex === i ? "opacity-40" : ""}
                   ${dragOverIndex === i && dragIndex !== null && dragIndex !== i ? "ring-2 ring-foreground" : ""}`}>
                 <img src={getImageUrl(img.image_url)} alt="" draggable={false} className="w-full h-full object-cover pointer-events-none" />

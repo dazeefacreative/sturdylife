@@ -5,7 +5,7 @@ const db      = require("../config/db");
 const { authenticate, adminOnly } = require("../middleware/auth");
 const uploadVideo           = require("../middleware/uploadVideo");
 const uploadCategoryImages  = require("../middleware/uploadCategoryImages");
-const uploadImage           = require("../middleware/upload");
+const uploadAboutImage      = require("../middleware/uploadAboutImage");
 
 const router = express.Router();
 const uploadDir = path.join(__dirname, "../uploads");
@@ -111,20 +111,20 @@ router.put(
 );
 
 // ─── POST /api/settings/about-images — admin: add one image (up to 4 total) ──
-router.post("/about-images", authenticate, adminOnly, ...uploadImage.withCompression("image", 1), async (req, res) => {
-  if (!req.files || !req.files.length) return res.status(400).json({ error: "An image is required" });
+router.post("/about-images", authenticate, adminOnly, ...uploadAboutImage.withValidation("image"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "An image is required" });
 
   try {
     const [[{ count }]] = await db.query("SELECT COUNT(*) AS count FROM about_slideshow_images");
     if (count >= MAX_ABOUT_IMAGES) {
-      fs.unlink(req.files[0].path, () => {});
+      fs.unlink(req.file.path, () => {});
       return res.status(400).json({ error: `You can upload up to ${MAX_ABOUT_IMAGES} images. Remove one first.` });
     }
 
     const [[{ maxOrder }]] = await db.query(
       "SELECT COALESCE(MAX(display_order), -1) AS maxOrder FROM about_slideshow_images"
     );
-    const url = `/uploads/${req.files[0].filename}`;
+    const url = `/uploads/${req.file.filename}`;
     const [result] = await db.query(
       "INSERT INTO about_slideshow_images (image_url, display_order) VALUES (?, ?)",
       [url, maxOrder + 1]
@@ -133,7 +133,7 @@ router.post("/about-images", authenticate, adminOnly, ...uploadImage.withCompres
     res.status(201).json({ id: result.insertId, image_url: url });
   } catch (err) {
     console.error("About image add error:", err);
-    fs.unlink(req.files[0].path, () => {});
+    fs.unlink(req.file.path, () => {});
     res.status(500).json({ error: "Failed to save image" });
   }
 });

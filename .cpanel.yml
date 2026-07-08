@@ -1,0 +1,10 @@
+---
+deployment:
+  tasks:
+    - export NODEBIN=$(ls -d /home/sturxitc/nodevenv/sturdylife-api/backend/*/bin | head -n 1)
+    - cd /home/sturxitc/sturdylife-api/backend && $NODEBIN/npm install --production
+    - cd /home/sturxitc/sturdylife-api/frontend && VITE_API_URL=https://api.sturdylifer.com/api $NODEBIN/npm install
+    - cd /home/sturxitc/sturdylife-api/frontend && VITE_API_URL=https://api.sturdylifer.com/api $NODEBIN/npm run build
+    - /bin/cp -r /home/sturxitc/sturdylife-api/frontend/dist/* /home/sturxitc/public_html/
+    - /bin/mkdir -p /home/sturxitc/sturdylife-api/backend/tmp
+    - /bin/touch /home/sturxitc/sturdylife-api/backend/tmp/restart.txt

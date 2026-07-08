@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import api from "@/lib/api";
 import { useAuth } from "./AuthContext";
+import { safeJsonParse } from "@/lib/safeJson";
 
 export interface CartItem {
   id: number;        // cart_item id
@@ -48,8 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchServerCart();
     } else {
-      const saved = localStorage.getItem(GUEST_CART_KEY);
-      setItems(saved ? JSON.parse(saved) : []);
+      setItems(safeJsonParse<CartItem[]>(GUEST_CART_KEY, []));
     }
   }, [user]);
 

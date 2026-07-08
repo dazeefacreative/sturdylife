@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import api from "@/lib/api";
+import { safeJsonParse } from "@/lib/safeJson";
 
 interface User {
   id: number;
@@ -45,10 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedToken = localStorage.getItem("sl_token");
-    const savedUser  = localStorage.getItem("sl_user");
+    const savedUser  = safeJsonParse<User | null>("sl_user", null);
     if (savedToken && savedUser) {
       setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      setUser(savedUser);
     }
     setLoading(false);
   }, []);

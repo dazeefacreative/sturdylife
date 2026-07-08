@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
 import { MotionLink, MotionButton, fadeHoverVariants, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { safeJsonParse } from "@/lib/safeJson";
 
 const solidButtonVariants = {
   rest: { backgroundColor: "var(--foreground)" },
@@ -29,7 +30,7 @@ export default function LoginPage() {
     setError("");
     try {
       await login(email, password);
-      const user = JSON.parse(localStorage.getItem("sl_user") || "{}");
+      const user = safeJsonParse<{ role?: string }>("sl_user", {});
       const destination = from || (user.role === "admin" ? "/admin" : "/shop");
       navigate(destination, { replace: true });
     } catch (err: any) {

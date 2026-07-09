@@ -56,7 +56,7 @@ export function SiteHeader() {
     <>
       {/* Announcement bar */}
       {/* <div className="bg-foreground text-primary-foreground text-center py-2 px-4 text-xs tracking-widest uppercase">
-        Complimentary shipping on orders over ₦250,000 — Use code <span className="underline underline-offset-2">STURDY25</span>
+        Complimentary shipping on orders over ₦250,000. Use code <span className="underline underline-offset-2">STURDY25</span>
       </div> */}
 
       {/* Navigation */}

@@ -108,7 +108,7 @@ export default function SiteSettingsPage() {
     try {
       const { w, h } = await readVideoDims(file);
       if (h >= w) {
-        setHeroError(`Video must be landscape orientation — got ${w}x${h}.`);
+        setHeroError(`Video must be landscape orientation. Got ${w}x${h}.`);
         return;
       }
     } catch {
@@ -137,7 +137,7 @@ export default function SiteSettingsPage() {
       setHeroSuccess(true);
     } catch (err: any) {
       if (err.code === "ECONNABORTED") {
-        setHeroError("The upload timed out, but it may have finished on the server — reload the page to check before retrying.");
+        setHeroError("The upload timed out, but it may have finished on the server. Reload the page to check before retrying.");
       } else {
         setHeroError(err.response?.data?.error || "Upload failed");
       }
@@ -164,7 +164,7 @@ export default function SiteSettingsPage() {
       const { w, h } = await readImageDims(file);
       const actual = w / h;
       if (Math.abs(actual - ratio) > RATIO_TOLERANCE) {
-        setCategoryErrors((prev) => ({ ...prev, [slug]: `Image must be ${ratioLabel} — got ${w}x${h}.` }));
+        setCategoryErrors((prev) => ({ ...prev, [slug]: `Image must be ${ratioLabel}. Got ${w}x${h}.` }));
         return;
       }
     } catch {
@@ -215,7 +215,7 @@ export default function SiteSettingsPage() {
       const { w, h } = await readImageDims(file);
       const actual = w / h;
       if (Math.abs(actual - ABOUT_RATIO) > RATIO_TOLERANCE) {
-        setAboutError(`Image must be ${ABOUT_RATIO_LABEL} — got ${w}x${h}.`);
+        setAboutError(`Image must be ${ABOUT_RATIO_LABEL}. Got ${w}x${h}.`);
         return;
       }
     } catch {
@@ -343,7 +343,7 @@ export default function SiteSettingsPage() {
         return (
           <section key={cat.slug} className="mb-12">
             <h2 className="text-[10px] tracking-widest uppercase font-bold mb-4 border-b border-border pb-2">
-              {cat.label} — Shop by Category Image
+              {cat.label}: Shop by Category Image
             </h2>
             <p className="text-xs text-muted-foreground mb-4">
               {cat.ratioLabel}, up to 2MB

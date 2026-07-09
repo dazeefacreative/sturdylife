@@ -48,7 +48,7 @@ export default function AboutPage() {
             </h2>
             <div className="space-y-5">
               <p className="text-sm md:text-base text-muted-foreground leading-relaxed font-light">
-                Sturdy Life was built for those who move with intention — those who understand that life is given, but purpose is chosen.
+                Sturdy Life was built for those who move with intention, for those who understand that life is given, but purpose is chosen.
               </p>
               <p className="text-sm md:text-base text-muted-foreground leading-relaxed font-light">
                 The ankh isn't decoration. It's a mark of balance, responsibility, and life sustained through discipline.
@@ -95,7 +95,7 @@ export default function AboutPage() {
               Just work, meaning, and presence.
             </p>
             <p className="text-xs tracking-[0.3em] uppercase font-bold">
-              Sturdy Life<sup>®️</sup> — Life with Purpose
+              Sturdy Life<sup>®️</sup> · Life with Purpose
             </p>
           </div>
         </section>

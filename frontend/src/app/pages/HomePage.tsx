@@ -349,7 +349,7 @@ export default function HomePage() {
             What does<br /><em className="font-light italic">sturdy life</em><br />mean to you?
           </h2>
           <p className="text-gray-500 text-sm leading-relaxed max-w-sm mb-10 font-light">
-            This isn't fashion. It's identity. Sturdy Life was built for those who move with intention — those who understand that life is given, but purpose is chosen.
+            This isn't fashion. It's identity. Sturdy Life was built for those who move with intention, for those who understand that life is given, but purpose is chosen.
           </p>
           <MotionLink to="/about"
             initial="rest" whileHover="hover" whileTap={tapScaleSm}

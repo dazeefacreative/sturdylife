@@ -96,7 +96,36 @@ export default function ProductPage() {
     }
   };
 
-  useDocumentTitle(product?.name || "Product", product?.description?.slice(0, 160));
+  useDocumentTitle(
+    product?.name || "Product",
+    product?.description?.slice(0, 160) || (product?.name ? `Shop the ${product.name} at Sturdy Life.` : undefined),
+    product ? allImages[0] : undefined
+  );
+
+  // Product structured data for search engines (price, availability, image).
+  useEffect(() => {
+    if (!product) return;
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      description: product.description || `${product.name} from Sturdy Life.`,
+      image: allImages,
+      sku: String(product.id),
+      brand: { "@type": "Brand", name: "Sturdy Life" },
+      offers: {
+        "@type": "Offer",
+        url: window.location.href,
+        priceCurrency: "NGN",
+        price: product.price,
+        availability: availableSizes.length > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      },
+    });
+    document.head.appendChild(script);
+    return () => { document.head.removeChild(script); };
+  }, [product]);
 
   if (loading) {
     return (

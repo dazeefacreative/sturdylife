@@ -25,7 +25,7 @@ export default function TermsPage() {
         },
         {
           heading: "Intellectual Property",
-          body: <p>All content on this site — including product photography, copy, and the Sturdy Life name and logo — belongs to Sturdy Life and may not be used without permission.</p>,
+          body: <p>All content on this site, including product photography, copy, and the Sturdy Life name and logo, belongs to Sturdy Life and may not be used without permission.</p>,
         },
         {
           heading: "Limitation of Liability",

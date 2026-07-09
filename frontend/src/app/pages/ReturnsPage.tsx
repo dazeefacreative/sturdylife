@@ -5,7 +5,7 @@ export default function ReturnsPage() {
     <StaticInfoPage
       title="Returns"
       intro="Not the right fit? We'll make it easy."
-      description="Sturdy Life's 30-day return policy — eligibility, process, and refunds."
+      description="Sturdy Life's 30-day return policy: eligibility, process, and refunds."
       sections={[
         {
           heading: "Return Window",

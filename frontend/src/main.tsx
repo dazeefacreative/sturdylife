@@ -33,6 +33,7 @@ import AdminProducts   from "@/app/pages/admin/ProductsPage";
 import ProductFormPage from "@/app/pages/admin/ProductFormPage";
 import AdminOrders     from "@/app/pages/admin/OrdersPage";
 import AdminCustomers  from "@/app/pages/admin/CustomersPage";
+import AdminNewsletter from "@/app/pages/admin/NewsletterPage";
 import SiteSettingsPage from "@/app/pages/admin/SiteSettingsPage";
 
 import "@/styles/tailwind.css";
@@ -95,6 +96,7 @@ function AppRoutes() {
         <Route path="products/:id/edit" element={<ProductFormPage />} />
         <Route path="orders"            element={<AdminOrders />} />
         <Route path="customers"         element={<AdminCustomers />} />
+        <Route path="newsletter"        element={<AdminNewsletter />} />
         <Route path="settings"          element={<SiteSettingsPage />} />
       </Route>
 

@@ -36,7 +36,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ─── Static uploads ─────────────────────────────────────────
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Uploaded files are saved under a random filename per upload (see
+// middleware/uploadVideo.js, upload.js), so a given URL's content never
+// changes — safe to let browsers cache it forever. A new admin upload
+// always gets a new URL, so this can't serve stale content.
+app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
+  maxAge: "1y",
+  immutable: true,
+}));
 
 // ─── Routes ──────────────────────────────────────────────────
 app.use("/api/auth",       require("./routes/auth"));

@@ -16,6 +16,8 @@ import hoodies from "@/imports/hoodies.jpg";
 import shirts from "@/imports/shirts.jpg";
 import editorialShoot2 from "@/imports/editorialShoot2.jpg";
 
+const HERO_VIDEO_CACHE_KEY = "sturdy-hero-video-url";
+
 const categoryDefaults = [
   { name: "Hoodies", subtitle: "Essential comfort", image: hoodies, slug: "hoodies" },
   { name: "Beanie Caps", subtitle: "All-season warmth", image: beanieCap, slug: "beanie-caps" },
@@ -97,7 +99,9 @@ export default function HomePage() {
   const [subscribed, setSubscribed] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [heroVideoUrl, setHeroVideoUrl] = useState<string | null>(null);
+  const [heroVideoUrl, setHeroVideoUrl] = useState<string | null>(() => {
+    try { return localStorage.getItem(HERO_VIDEO_CACHE_KEY); } catch { return null; }
+  });
   const [categoryImages, setCategoryImages] = useState<Record<string, string | null>>({});
   const [aboutImages, setAboutImages] = useState<string[]>([]);
 
@@ -119,7 +123,12 @@ export default function HomePage() {
   useEffect(() => {
     api.get("/settings")
       .then(({ data }) => {
-        setHeroVideoUrl(data.hero_video_url || null);
+        const videoUrl = data.hero_video_url || null;
+        setHeroVideoUrl(videoUrl);
+        try {
+          if (videoUrl) localStorage.setItem(HERO_VIDEO_CACHE_KEY, videoUrl);
+          else localStorage.removeItem(HERO_VIDEO_CACHE_KEY);
+        } catch { /* localStorage unavailable (e.g. private browsing) */ }
         setCategoryImages(data.categoryImages || {});
         setAboutImages((data.aboutImages || []).map((img: { image_url: string }) => img.image_url));
       })

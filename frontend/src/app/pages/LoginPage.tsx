@@ -7,6 +7,8 @@ import { MotionLink, MotionButton, fadeHoverVariants, arrowShiftVariants, tapSca
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 import { safeJsonParse } from "@/lib/safeJson";
 
+import sturdyImage from "@/imports/editorialShoot2.jpg";
+
 const solidButtonVariants = {
   rest: { backgroundColor: "var(--foreground)" },
   hover: { backgroundColor: "rgba(var(--action-rgb), 0.8)" },
@@ -45,8 +47,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex" style={{ fontFamily: "'Barlow', sans-serif" }}>
       {/* Left image panel */}
-      <div className="hidden md:block w-1/2 relative overflow-hidden bg-muted">
-        <img src="https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?w=900&h=1200&fit=crop&auto=format"
+      <div className="hidden md:block w-1/2 relative overflow-hidden grayscale bg-muted">
+        <img src={sturdyImage}
           alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/30" />
         <MotionLink to="/" initial="rest" whileHover="hover" variants={fadeHoverVariants}

@@ -6,6 +6,7 @@ import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 import editorialShoot from "@/imports/editorialShoot.jpg";
+import aboutpagecover from "@/imports/aboutpage.jpg";
 
 const values = [
   { title: "Construction first", body: "Reinforced seams, heavyweight cotton, full-grain leather - every piece is built to be worn for a decade, not a season." },
@@ -26,7 +27,7 @@ export default function AboutPage() {
 
       {/* Hero */}
       <section className="relative w-full overflow-hidden bg-black" style={{ height: "60vh", minHeight: 420 }}>
-        <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=1800&h=1000&fit=crop&auto=format"
+        <img src={aboutpagecover}
           alt="Sturdy Life workshop"
           className="absolute inset-0 w-full h-full object-cover opacity-90" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />

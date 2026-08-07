@@ -6,6 +6,8 @@ import { useAuth } from "@/app/context/AuthContext";
 import { MotionLink, MotionButton, fadeHoverVariants, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
+import sturdyImage from "@/imports/editorialShoot4.jpg";
+
 const solidButtonVariants = {
   rest: { backgroundColor: "var(--foreground)" },
   hover: { backgroundColor: "rgba(var(--action-rgb), 0.8)" },
@@ -35,8 +37,8 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex" style={{ fontFamily: "'Barlow', sans-serif" }}>
-      <div className="hidden md:block w-1/2 relative overflow-hidden bg-muted">
-        <img src="https://images.unsplash.com/photo-1520975954732-35dd22299614?w=900&h=1200&fit=crop&auto=format"
+      <div className="hidden md:block w-1/2 relative overflow-hidden grayscale bg-muted">
+        <img src={sturdyImage}
           alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/30" />
         <MotionLink to="/" initial="rest" whileHover="hover" variants={fadeHoverVariants}

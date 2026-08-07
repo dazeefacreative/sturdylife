@@ -148,4 +148,29 @@ router.get("/newsletter", async (req, res) => {
   res.json(rows);
 });
 
+// ─── GET /api/admin/newsletter/export — download as XML ──────
+const escapeXml = (str) =>
+  String(str).replace(/[<>&'"]/g, (c) => (
+    { "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c]
+  ));
+
+router.get("/newsletter/export", async (req, res) => {
+  const [rows] = await db.query(
+    "SELECT email, subscribed_at FROM newsletter_subscribers WHERE is_active = 1 ORDER BY subscribed_at DESC"
+  );
+
+  const body = rows.map((r) => (
+    `  <subscriber>\n` +
+    `    <email>${escapeXml(r.email)}</email>\n` +
+    `    <subscribedAt>${escapeXml(new Date(r.subscribed_at).toISOString())}</subscribedAt>\n` +
+    `  </subscriber>`
+  )).join("\n");
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<subscribers count="${rows.length}">\n${body}\n</subscribers>\n`;
+
+  res.set("Content-Type", "application/xml");
+  res.set("Content-Disposition", `attachment; filename="newsletter-subscribers-${new Date().toISOString().slice(0, 10)}.xml"`);
+  res.send(xml);
+});
+
 module.exports = router;

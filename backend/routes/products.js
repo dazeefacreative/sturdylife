@@ -112,6 +112,9 @@ router.post("/", authenticate, adminOnly, ...upload.withCompression("images", 8)
     res.status(201).json({ id: productId, slug, message: "Product created" });
   } catch (err) {
     await conn.rollback();
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ error: "A product with this name already exists. Try a different name." });
+    }
     console.error(err);
     res.status(500).json({ error: "Failed to create product" });
   } finally {
@@ -176,6 +179,9 @@ router.put("/:id", authenticate, adminOnly, ...upload.withCompression("images", 
     res.json({ message: "Product updated" });
   } catch (err) {
     await conn.rollback();
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ error: "A product with this name already exists. Try a different name." });
+    }
     console.error(err);
     res.status(500).json({ error: "Failed to update product" });
   } finally {

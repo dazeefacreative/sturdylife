@@ -29,7 +29,7 @@ const upload = multer({
 const compressImages = async (req, res, next) => {
   if (!req.files || !req.files.length) return next();
   try {
-    for (const file of req.files) {
+    await Promise.all(req.files.map(async (file) => {
       const name     = crypto.randomBytes(16).toString("hex");
       const filename = `${name}.webp`;
       const dest     = path.join(uploadDir, filename);
@@ -39,7 +39,7 @@ const compressImages = async (req, res, next) => {
 
       file.filename = filename;
       file.path     = dest;
-    }
+    }));
     next();
   } catch (err) {
     console.error("Image compression error:", err);

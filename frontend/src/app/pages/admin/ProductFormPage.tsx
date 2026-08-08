@@ -99,18 +99,28 @@ export default function ProductFormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    if (!sizes.some((s) => s.stock > 0)) {
+      setError("Add stock for at least one size before publishing.");
+      return;
+    }
+
+    setLoading(true);
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)));
       fd.append("sizes", JSON.stringify(sizes));
       images.forEach((img) => fd.append("images", img));
 
+      // Longer timeout than the default 15s — multiple images means real
+      // upload time plus sequential server-side compression, which can
+      // legitimately take a while, especially on a slower connection.
+      const uploadConfig = { headers: { "Content-Type": "multipart/form-data" }, timeout: 120000 };
       if (isEdit) {
-        await api.put(`/products/${id}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+        await api.put(`/products/${id}`, fd, uploadConfig);
       } else {
-        await api.post("/products", fd, { headers: { "Content-Type": "multipart/form-data" } });
+        await api.post("/products", fd, uploadConfig);
       }
       navigate("/admin/products");
     } catch (err: any) {
@@ -127,8 +137,6 @@ export default function ProductFormPage() {
       <h1 className="text-2xl font-black mb-8" style={{ fontFamily: "'Fraunces', serif" }}>
         {isEdit ? "Edit Product" : "Add New Product"}
       </h1>
-
-      {error && <p className="text-red-500 text-sm mb-6">{error}</p>}
 
       {loadingProduct ? (
         <div className="space-y-4">
@@ -245,6 +253,8 @@ export default function ProductFormPage() {
             className="w-4 h-4" />
           <label htmlFor="active" className="text-sm">Product is active and visible in store</label>
         </div>
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <div className="flex gap-4">
           <MotionButton type="button" onClick={() => navigate("/admin/products")}

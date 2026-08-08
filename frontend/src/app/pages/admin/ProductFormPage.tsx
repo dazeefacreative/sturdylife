@@ -106,6 +106,11 @@ export default function ProductFormPage() {
       return;
     }
 
+    if (existingImages.length === 0 && images.length === 0) {
+      setError("Add at least one product image before publishing.");
+      return;
+    }
+
     setLoading(true);
     try {
       const fd = new FormData();

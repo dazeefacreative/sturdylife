@@ -106,6 +106,9 @@ router.post("/", authenticate, adminOnly, ...upload.withCompression("images", 8)
   if (price === undefined || price === null || price === "" || isNaN(Number(price)) || Number(price) < 0) {
     return res.status(400).json({ error: "A valid price is required." });
   }
+  if (!req.files || !req.files.length) {
+    return res.status(400).json({ error: "Add at least one product image before publishing." });
+  }
 
   let parsedSizes = [];
   if (sizes) {

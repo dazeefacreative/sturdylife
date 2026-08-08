@@ -21,7 +21,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB raw upload limit before compression
+  limits: { fileSize: 12 * 1024 * 1024 }, // 12MB raw upload limit before compression (Sharp compresses every image down to 500KB regardless of input size)
 });
 
 // hoodies are square (1:1); beanie caps and shirts are wide banners (3:1)

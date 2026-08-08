@@ -17,8 +17,8 @@ const submitButtonVariants = {
 };
 
 const MAX_VIDEO_SIZE = 5 * 1024 * 1024;
-const MAX_CATEGORY_RAW_SIZE = 2 * 1024 * 1024;
-const MAX_ABOUT_RAW_SIZE = 2 * 1024 * 1024;
+const MAX_CATEGORY_RAW_SIZE = 12 * 1024 * 1024;
+const MAX_ABOUT_RAW_SIZE = 12 * 1024 * 1024;
 const RATIO_TOLERANCE = 0.08;
 const MAX_ABOUT_IMAGES = 4;
 const ABOUT_RATIO = 3 / 2;
@@ -157,7 +157,7 @@ export default function SiteSettingsPage() {
       return;
     }
     if (file.size > MAX_CATEGORY_RAW_SIZE) {
-      setCategoryErrors((prev) => ({ ...prev, [slug]: `Image must be 2MB or smaller (this file is ${(file.size / 1024 / 1024).toFixed(1)}MB).` }));
+      setCategoryErrors((prev) => ({ ...prev, [slug]: `Image must be 12MB or smaller (this file is ${(file.size / 1024 / 1024).toFixed(1)}MB).` }));
       return;
     }
     try {
@@ -208,7 +208,7 @@ export default function SiteSettingsPage() {
       return;
     }
     if (file.size > MAX_ABOUT_RAW_SIZE) {
-      setAboutError(`Image must be 2MB or smaller (this file is ${(file.size / 1024 / 1024).toFixed(1)}MB).`);
+      setAboutError(`Image must be 12MB or smaller (this file is ${(file.size / 1024 / 1024).toFixed(1)}MB).`);
       return;
     }
     try {
@@ -346,7 +346,7 @@ export default function SiteSettingsPage() {
               {cat.label}: Shop by Category Image
             </h2>
             <p className="text-xs text-muted-foreground mb-4">
-              {cat.ratioLabel}, up to 2MB
+              {cat.ratioLabel}, up to 12MB
             </p>
 
             {(preview || current) && (
@@ -385,7 +385,7 @@ export default function SiteSettingsPage() {
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
           Up to {MAX_ABOUT_IMAGES} images. Drag to reorder, or use the arrows.
-          Each image must be {ABOUT_RATIO_LABEL}, max 2MB.
+          Each image must be {ABOUT_RATIO_LABEL}, max 12MB.
         </p>
 
         {aboutImages.length > 0 && (

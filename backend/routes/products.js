@@ -8,6 +8,29 @@ const upload   = require("../middleware/upload");
 
 const router = express.Router();
 
+// Maps common MySQL error codes to admin-facing messages, so a bad request
+// (invalid category, duplicate name, oversized field, etc.) tells the admin
+// what to fix instead of a generic "failed" message. Returns null for
+// anything not worth surfacing directly, which falls back to a 500.
+function friendlyProductError(err) {
+  switch (err.code) {
+    case "ER_DUP_ENTRY":
+      return "A product with this name already exists. Try a different name.";
+    case "ER_NO_REFERENCED_ROW_2":
+    case "ER_NO_REFERENCED_ROW":
+      return "The selected category no longer exists. Refresh the page and try again.";
+    case "ER_BAD_NULL_ERROR":
+      return "A required field is missing.";
+    case "ER_DATA_TOO_LONG":
+      return "One of the fields is too long.";
+    case "ER_TRUNCATED_WRONG_VALUE_FOR_FIELD":
+    case "WARN_DATA_TRUNCATED":
+      return "One of the fields has an invalid value. Check the price and tag.";
+    default:
+      return null;
+  }
+}
+
 // ─── GET /api/products — public list ─────────────────────────
 router.get("/", async (req, res) => {
   try {
@@ -75,10 +98,27 @@ router.get("/:slug", async (req, res) => {
 
 // ─── POST /api/products — admin create ───────────────────────
 router.post("/", authenticate, adminOnly, ...upload.withCompression("images", 8), async (req, res) => {
+  const { name, description, price, category_id, tag, sizes } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: "Product name is required." });
+  }
+  if (price === undefined || price === null || price === "" || isNaN(Number(price)) || Number(price) < 0) {
+    return res.status(400).json({ error: "A valid price is required." });
+  }
+
+  let parsedSizes = [];
+  if (sizes) {
+    try {
+      parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
+    } catch {
+      return res.status(400).json({ error: "Invalid size data." });
+    }
+  }
+
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
-    const { name, description, price, category_id, tag, sizes } = req.body;
 
     const slug = slugify(name, { lower: true, strict: true });
     const [result] = await conn.query(
@@ -98,23 +138,19 @@ router.post("/", authenticate, adminOnly, ...upload.withCompression("images", 8)
     }
 
     // Sizes e.g. sizes = [{"size":"S","stock":10},{"size":"M","stock":5}]
-    if (sizes) {
-      const parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
-      for (const s of parsedSizes) {
-        await conn.query(
-          "INSERT INTO product_sizes (product_id, size, stock_quantity) VALUES (?, ?, ?)",
-          [productId, s.size, s.stock || 0]
-        );
-      }
+    for (const s of parsedSizes) {
+      await conn.query(
+        "INSERT INTO product_sizes (product_id, size, stock_quantity) VALUES (?, ?, ?)",
+        [productId, s.size, s.stock || 0]
+      );
     }
 
     await conn.commit();
     res.status(201).json({ id: productId, slug, message: "Product created" });
   } catch (err) {
     await conn.rollback();
-    if (err.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "A product with this name already exists. Try a different name." });
-    }
+    const friendly = friendlyProductError(err);
+    if (friendly) return res.status(400).json({ error: friendly });
     console.error(err);
     res.status(500).json({ error: "Failed to create product" });
   } finally {
@@ -124,10 +160,27 @@ router.post("/", authenticate, adminOnly, ...upload.withCompression("images", 8)
 
 // ─── PUT /api/products/:id — admin update ────────────────────
 router.put("/:id", authenticate, adminOnly, ...upload.withCompression("images", 8), async (req, res) => {
+  const { name, description, price, category_id, tag, is_active, sizes } = req.body;
+
+  if (name !== undefined && !name.trim()) {
+    return res.status(400).json({ error: "Product name cannot be empty." });
+  }
+  if (price !== undefined && (price === "" || isNaN(Number(price)) || Number(price) < 0)) {
+    return res.status(400).json({ error: "A valid price is required." });
+  }
+
+  let parsedSizes = [];
+  if (sizes) {
+    try {
+      parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
+    } catch {
+      return res.status(400).json({ error: "Invalid size data." });
+    }
+  }
+
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
-    const { name, description, price, category_id, tag, is_active, sizes } = req.body;
     const slug = name ? slugify(name, { lower: true, strict: true }) : undefined;
 
     const fields = [];
@@ -164,24 +217,20 @@ router.put("/:id", authenticate, adminOnly, ...upload.withCompression("images", 
       }
     }
 
-    if (sizes) {
-      const parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
-      for (const s of parsedSizes) {
-        await conn.query(
-          `INSERT INTO product_sizes (product_id, size, stock_quantity) VALUES (?, ?, ?)
-           ON DUPLICATE KEY UPDATE stock_quantity = ?`,
-          [req.params.id, s.size, s.stock, s.stock]
-        );
-      }
+    for (const s of parsedSizes) {
+      await conn.query(
+        `INSERT INTO product_sizes (product_id, size, stock_quantity) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE stock_quantity = ?`,
+        [req.params.id, s.size, s.stock, s.stock]
+      );
     }
 
     await conn.commit();
     res.json({ message: "Product updated" });
   } catch (err) {
     await conn.rollback();
-    if (err.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "A product with this name already exists. Try a different name." });
-    }
+    const friendly = friendlyProductError(err);
+    if (friendly) return res.status(400).json({ error: friendly });
     console.error(err);
     res.status(500).json({ error: "Failed to update product" });
   } finally {

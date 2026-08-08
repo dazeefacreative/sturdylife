@@ -250,6 +250,14 @@ router.delete("/:productId/images/:imageId", authenticate, adminOnly, async (req
     );
     if (!image) return res.status(404).json({ error: "Image not found" });
 
+    const [[{ count }]] = await db.query(
+      "SELECT COUNT(*) AS count FROM product_images WHERE product_id = ?",
+      [req.params.productId]
+    );
+    if (count <= 1) {
+      return res.status(400).json({ error: "Products must have at least one image. Upload a replacement before removing this one." });
+    }
+
     await db.query("DELETE FROM product_images WHERE id = ?", [image.id]);
 
     const filePath = path.join(__dirname, "..", image.image_url);

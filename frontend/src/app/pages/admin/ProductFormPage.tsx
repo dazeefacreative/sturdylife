@@ -85,8 +85,17 @@ export default function ProductFormPage() {
 
   const removeExistingImage = async (imageId: number) => {
     if (!id) return;
-    await api.delete(`/products/${id}/images/${imageId}`);
-    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+    if (existingImages.length === 1 && images.length === 0) {
+      setError("Add a replacement image before removing the last one.");
+      return;
+    }
+    setError("");
+    try {
+      await api.delete(`/products/${id}/images/${imageId}`);
+      setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to remove image");
+    }
   };
 
   const removeNewImage = (index: number) => {

@@ -17,8 +17,6 @@ const submitButtonVariants = {
 };
 
 const MAX_VIDEO_SIZE = 5 * 1024 * 1024;
-const MAX_CATEGORY_RAW_SIZE = 12 * 1024 * 1024;
-const MAX_ABOUT_RAW_SIZE = 12 * 1024 * 1024;
 const RATIO_TOLERANCE = 0.08;
 const MAX_ABOUT_IMAGES = 4;
 const ABOUT_RATIO = 3 / 2;
@@ -156,10 +154,6 @@ export default function SiteSettingsPage() {
       setCategoryErrors((prev) => ({ ...prev, [slug]: "Only jpg, png, or webp images are allowed." }));
       return;
     }
-    if (file.size > MAX_CATEGORY_RAW_SIZE) {
-      setCategoryErrors((prev) => ({ ...prev, [slug]: `Image must be 12MB or smaller (this file is ${(file.size / 1024 / 1024).toFixed(1)}MB).` }));
-      return;
-    }
     try {
       const { w, h } = await readImageDims(file);
       const actual = w / h;
@@ -205,10 +199,6 @@ export default function SiteSettingsPage() {
     }
     if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
       setAboutError("Only jpg, png, or webp images are allowed.");
-      return;
-    }
-    if (file.size > MAX_ABOUT_RAW_SIZE) {
-      setAboutError(`Image must be 12MB or smaller (this file is ${(file.size / 1024 / 1024).toFixed(1)}MB).`);
       return;
     }
     try {
@@ -346,7 +336,7 @@ export default function SiteSettingsPage() {
               {cat.label}: Shop by Category Image
             </h2>
             <p className="text-xs text-muted-foreground mb-4">
-              {cat.ratioLabel}, up to 12MB
+              {cat.ratioLabel} — please keep under 2MB
             </p>
 
             {(preview || current) && (
@@ -385,7 +375,7 @@ export default function SiteSettingsPage() {
         </h2>
         <p className="text-xs text-muted-foreground mb-4">
           Up to {MAX_ABOUT_IMAGES} images. Drag to reorder, or use the arrows.
-          Each image must be {ABOUT_RATIO_LABEL}, max 12MB.
+          Each image must be {ABOUT_RATIO_LABEL} — please keep under 2MB.
         </p>
 
         {aboutImages.length > 0 && (

@@ -5,8 +5,8 @@ const backendOrigin = apiBase.replace(/\/api\/?$/, "");
 // "/uploads/abc.jpg". Locally that resolves fine through vite's dev proxy,
 // but once the frontend and backend are on different origins (sturdylifer.com
 // + api.sturdylifer.com) it needs the backend's actual origin prefixed on.
-export function getImageUrl(path?: string | null) {
-  if (!path) return path;
+export function getImageUrl(path?: string | null): string | undefined {
+  if (!path) return undefined;
   if (/^https?:\/\//.test(path)) return path;
   return `${backendOrigin}${path}`;
 }

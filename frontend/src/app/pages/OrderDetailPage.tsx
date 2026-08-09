@@ -7,6 +7,7 @@ import { SiteFooter } from "@/app/components/layout/SiteFooter";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionLink, ghostHoverVariants } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { BEANIE_CATEGORY_SLUG } from "@/lib/constants";
 
 const STATUS_STYLES: Record<string, string> = {
   pending:    "bg-yellow-50  text-yellow-700 border-yellow-200",
@@ -76,7 +77,7 @@ export default function OrderDetailPage() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium leading-snug">{item.product_name}</p>
                         <p className="text-[10px] tracking-widest uppercase text-muted-foreground mt-1">
-                          {item.size && `Size ${item.size}`} {item.size && "·"} Qty {item.quantity}
+                          {item.size && `${item.category_slug === BEANIE_CATEGORY_SLUG ? "Color" : "Size"} ${item.size}`} {item.size && "·"} Qty {item.quantity}
                         </p>
                         <p className="text-sm font-semibold mt-2">₦{Number(item.subtotal).toLocaleString()}</p>
                       </div>

@@ -4,6 +4,7 @@ import api from "@/lib/api";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { MotionButton, tapScaleSm } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { BEANIE_CATEGORY_SLUG } from "@/lib/constants";
 
 const STATUSES = ["pending","paid","processing","shipped","delivered","cancelled","refunded"];
 const STATUS_STYLES: Record<string, string> = {
@@ -123,7 +124,7 @@ export default function AdminOrdersPage() {
                           <div className="space-y-1">
                             {o.items.map((it: any) => (
                               <div key={it.id} className="flex items-center justify-between text-xs text-muted-foreground">
-                                <span>{it.product_name} ({it.size}) × {it.quantity}</span>
+                                <span>{it.product_name} ({it.category_slug === BEANIE_CATEGORY_SLUG ? "Color" : "Size"}: {it.size}) × {it.quantity}</span>
                                 <span>₦{Number(it.subtotal).toLocaleString()}</span>
                               </div>
                             ))}

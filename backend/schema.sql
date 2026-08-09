@@ -76,12 +76,38 @@ CREATE TABLE product_images (
 );
 
 -- ─────────────────────────────────────────
--- PRODUCT SIZES (stock per size)
+-- COLORS (reusable global color palette — used by categories that sell
+-- by color instead of size, e.g. Beanie Caps. Not FK-linked to
+-- product_sizes.size on purpose: it's a name-matched suggestion/registry,
+-- not a hard constraint, so a genuine size value never collides with it.)
+-- ─────────────────────────────────────────
+CREATE TABLE colors (
+  id         INT PRIMARY KEY AUTO_INCREMENT,
+  name       VARCHAR(50) UNIQUE NOT NULL,
+  hex_code   VARCHAR(7) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO colors (name, hex_code) VALUES
+  ('Black', '#000000'),
+  ('White', '#FFFFFF'),
+  ('Grey', '#808080'),
+  ('Navy Blue', '#1B2A4A'),
+  ('Red', '#C41E3A'),
+  ('Green', '#2E5339'),
+  ('Burgundy', '#6D071A'),
+  ('Purple', '#6A0DAD'),
+  ('Camel', '#C19A6B'),
+  ('Mustard', '#E1AD01');
+
+-- ─────────────────────────────────────────
+-- PRODUCT SIZES (stock per size — also holds color names for
+-- categories like Beanie Caps that sell by color instead of size)
 -- ─────────────────────────────────────────
 CREATE TABLE product_sizes (
   id             INT PRIMARY KEY AUTO_INCREMENT,
   product_id     INT NOT NULL,
-  size           VARCHAR(10) NOT NULL,   -- XS, S, M, L, XL, XXL | 30, 32, 34…
+  size           VARCHAR(50) NOT NULL,   -- XS, S, M, L, XL, XXL | 30, 32, 34… | color name
   stock_quantity INT DEFAULT 0,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   UNIQUE KEY unique_product_size (product_id, size)
@@ -94,7 +120,7 @@ CREATE TABLE cart_items (
   id          INT PRIMARY KEY AUTO_INCREMENT,
   user_id     INT NOT NULL,
   product_id  INT NOT NULL,
-  size        VARCHAR(10),
+  size        VARCHAR(50),
   quantity    INT DEFAULT 1,
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -155,8 +181,9 @@ CREATE TABLE order_items (
   product_id    INT,
   product_name  VARCHAR(255) NOT NULL,   -- snapshot — survives product edits
   product_image VARCHAR(500),
+  category_slug VARCHAR(100),            -- snapshot — used to label size vs color
   price         DECIMAL(10,2) NOT NULL,  -- snapshot price
-  size          VARCHAR(10),
+  size          VARCHAR(50),
   quantity      INT NOT NULL,
   subtotal      DECIMAL(10,2) NOT NULL,
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,

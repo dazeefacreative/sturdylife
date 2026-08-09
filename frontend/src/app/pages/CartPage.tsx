@@ -6,6 +6,7 @@ import { getImageUrl } from "@/lib/media";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
 import { MotionLink, MotionButton, ghostHoverVariants, arrowShiftVariants, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { BEANIE_CATEGORY_SLUG } from "@/lib/constants";
 
 const solidButtonVariants = {
   rest: { backgroundColor: "var(--foreground)" },
@@ -69,7 +70,7 @@ export default function CartPage() {
                   <div className="flex justify-between gap-4">
                     <div>
                       <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">
-                        {item.size && `Size ${item.size}`}
+                        {item.size && `${item.category_slug === BEANIE_CATEGORY_SLUG ? "Color" : "Size"} ${item.size}`}
                       </p>
                       <MotionLink to={`/product/${item.slug}`} whileTap={tapScaleSm}>
                         <h3 className="text-sm font-medium">{item.name}</h3>

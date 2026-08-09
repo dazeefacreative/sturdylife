@@ -118,7 +118,10 @@ router.get("/products/:id", async (req, res) => {
     [product.id]
   );
   const [sizes] = await db.query(
-    "SELECT size, stock_quantity FROM product_sizes WHERE product_id = ? ORDER BY id",
+    `SELECT ps.size, ps.stock_quantity, c.hex_code
+     FROM product_sizes ps
+     LEFT JOIN colors c ON c.name = ps.size
+     WHERE ps.product_id = ? ORDER BY ps.id`,
     [product.id]
   );
 

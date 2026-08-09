@@ -45,9 +45,11 @@ router.post("/initialize", optionalAuth, async (req, res) => {
     const orderItems = [];
     for (const item of items) {
       const [[product]] = await conn.query(
-        `SELECT p.id, p.name, p.price,
+        `SELECT p.id, p.name, p.price, cat.slug AS category_slug,
                 (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
-         FROM products p WHERE p.id = ? AND p.is_active = 1`,
+         FROM products p
+         LEFT JOIN categories cat ON cat.id = p.category_id
+         WHERE p.id = ? AND p.is_active = 1`,
         [item.product_id]
       );
       if (!product) {
@@ -60,6 +62,7 @@ router.post("/initialize", optionalAuth, async (req, res) => {
         product_id: product.id,
         product_name: product.name,
         product_image: product.image,
+        category_slug: product.category_slug,
         price: product.price,
         size: item.size,
         quantity: item.quantity,
@@ -91,9 +94,9 @@ router.post("/initialize", optionalAuth, async (req, res) => {
     // Insert order items
     for (const oi of orderItems) {
       await conn.query(
-        `INSERT INTO order_items (order_id, product_id, product_name, product_image, price, size, quantity, subtotal)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [orderId, oi.product_id, oi.product_name, oi.product_image, oi.price, oi.size, oi.quantity, oi.subtotal]
+        `INSERT INTO order_items (order_id, product_id, product_name, product_image, category_slug, price, size, quantity, subtotal)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [orderId, oi.product_id, oi.product_name, oi.product_image, oi.category_slug, oi.price, oi.size, oi.quantity, oi.subtotal]
       );
     }
 

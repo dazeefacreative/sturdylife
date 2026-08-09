@@ -6,11 +6,12 @@ const router = express.Router();
 router.get("/", authenticate, async (req, res) => {
   const [items] = await db.query(`
     SELECT ci.id, ci.quantity, ci.size,
-           p.id AS product_id, p.name, p.slug, p.price,
+           p.id AS product_id, p.name, p.slug, p.price, cat.slug AS category_slug,
            (SELECT image_url FROM product_images
             WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
     FROM cart_items ci
     JOIN products p ON p.id = ci.product_id
+    LEFT JOIN categories cat ON cat.id = p.category_id
     WHERE ci.user_id = ?
   `, [req.user.id]);
   res.json(items);

@@ -10,6 +10,7 @@ import { SiteHeader } from "@/app/components/layout/SiteHeader";
 
 import { MotionLink, MotionButton, ghostHoverVariants, tapScale, tapScaleSm, tapScaleLg } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { BEANIE_CATEGORY_SLUG } from "@/lib/constants";
 
 const thumbRest = { borderColor: "rgba(0,0,0,0)" };
 const thumbHover = { borderColor: "var(--border)" };
@@ -55,6 +56,7 @@ export default function ProductPage() {
     ? product.images.map((img: any) => getImageUrl(img.image_url))
     : ["https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1000&fit=crop"];
 
+  const isBeanie = product?.category_slug === BEANIE_CATEGORY_SLUG;
   const availableSizes = product?.sizes?.filter((s: any) => s.stock_quantity > 0) || [];
 
   useEffect(() => {
@@ -81,7 +83,7 @@ export default function ProductPage() {
     if (!selectedSize) { setSizeError(true); return; }
     setAdding(true);
     const primaryImage = product.images?.find((img: any) => img.is_primary)?.image_url || product.images?.[0]?.image_url;
-    await addItem({ id: product.id, name: product.name, slug: product.slug, price: product.price, image: primaryImage }, selectedSize, quantity);
+    await addItem({ id: product.id, name: product.name, slug: product.slug, price: product.price, image: primaryImage, category_slug: product.category_slug }, selectedSize, quantity);
     setAdding(false);
   };
 
@@ -207,17 +209,29 @@ export default function ProductPage() {
 
             <p className="text-sm text-muted-foreground leading-relaxed mb-8 font-light">{product.description}</p>
 
-            {/* Size picker */}
+            {/* Size / Color picker */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[10px] tracking-widest uppercase font-bold">
-                  Select Size {selectedSize && <span className="font-normal text-muted-foreground ml-1">- {selectedSize}</span>}
+                  {isBeanie ? "Select Color" : "Select Size"} {selectedSize && <span className="font-normal text-muted-foreground ml-1">- {selectedSize}</span>}
                 </p>
               </div>
-              {sizeError && <p className="text-red-500 text-xs mb-2">Please select a size</p>}
+              {sizeError && <p className="text-red-500 text-xs mb-2">Please select a {isBeanie ? "color" : "size"}</p>}
               <div className="flex flex-wrap gap-2">
                 {availableSizes.length ? availableSizes.map((s: any) => {
                   const isSelected = selectedSize === s.size;
+                  if (isBeanie) {
+                    return (
+                      <motion.button key={s.size} onClick={() => { setSelectedSize(s.size); setSizeError(false); }}
+                        whileTap={tapScaleSm} title={s.size}
+                        className={`w-12 h-12 rounded-full border-2 transition-colors duration-100 focus:outline-none focus:ring-2 focus:ring-slate-400/40 ${
+                          isSelected ? "border-[#0f172a] ring-2 ring-offset-2 ring-[#0f172a]" : "border-slate-300 hover:border-[var(--action-border)]"
+                        }`}
+                        style={{ backgroundColor: s.hex_code || "#ccc" }}>
+                        <span className="sr-only">{s.size}</span>
+                      </motion.button>
+                    );
+                  }
                   return (
                     <motion.button key={s.size} onClick={() => { setSelectedSize(s.size); setSizeError(false); }}
                       whileTap={tapScaleSm}

@@ -12,6 +12,7 @@ export interface CartItem {
   size: string;
   quantity: number;
   image: string;
+  category_slug?: string;
 }
 
 interface CartContextType {
@@ -21,7 +22,7 @@ interface CartContextType {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (product: { id: number; name: string; slug: string; price: number; image?: string }, size: string, quantity?: number) => Promise<void>;
+  addItem: (product: { id: number; name: string; slug: string; price: number; image?: string; category_slug?: string }, size: string, quantity?: number) => Promise<void>;
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   removeItem: (itemId: number) => Promise<void>;
   clearCart: () => void;
@@ -64,7 +65,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch (_) { /* silently fail */ }
   };
 
-  const addItem = useCallback(async (product: { id: number; name: string; slug: string; price: number; image?: string }, size: string, quantity = 1) => {
+  const addItem = useCallback(async (product: { id: number; name: string; slug: string; price: number; image?: string; category_slug?: string }, size: string, quantity = 1) => {
     setLoading(true);
     try {
       if (user) {
@@ -88,6 +89,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 size,
                 quantity,
                 image: product.image || "",
+                category_slug: product.category_slug,
               }];
           persistGuestCart(next);
           return next;

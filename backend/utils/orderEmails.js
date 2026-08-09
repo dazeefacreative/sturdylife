@@ -8,12 +8,15 @@ const deliveryEstimate = (state) =>
     : "3–7 business days";
 
 const itemsTableRows = (items) =>
-  items.map((i) => `
+  items.map((i) => {
+    const variantLabel = i.category_slug === "beanie-caps" ? "Color" : "Size";
+    return `
     <tr>
-      <td style="padding:8px 0;border-bottom:1px solid #eee;">${i.product_name} (${i.size}) × ${i.quantity}</td>
+      <td style="padding:8px 0;border-bottom:1px solid #eee;">${i.product_name} (${variantLabel}: ${i.size}) × ${i.quantity}</td>
       <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;">${money(i.subtotal)}</td>
     </tr>
-  `).join("");
+  `;
+  }).join("");
 
 const sendCustomerReceipt = async (order, items) => {
   const html = `

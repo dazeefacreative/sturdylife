@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import { getImageUrl } from "@/lib/media";
 import { MotionButton, tapScale, tapScaleSm } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { BEANIE_CATEGORY_SLUG } from "@/lib/constants";
 
 const cancelButtonVariants = {
   rest: { backgroundColor: "rgba(0,0,0,0)" },
@@ -25,7 +26,23 @@ const uploadLabelVariants = {
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
 interface SizeStock { size: string; stock: number; }
+interface ColorStock { name: string; hex: string; stock: number; }
 interface ExistingImage { id: number; image_url: string; is_primary: boolean | number; }
+
+// Merges the reusable global color list with a product's existing per-color
+// stock (when editing), and folds in any color the product uses that has
+// since fallen out of the global list (defensive — shouldn't normally happen
+// since publishing always upserts into it).
+function buildColorStocks(globalColors: { name: string; hex_code: string }[], productSizes: any[] | null): ColorStock[] {
+  const base = globalColors.map((c) => {
+    const existing = productSizes?.find((s: any) => s.size.toLowerCase() === c.name.toLowerCase());
+    return { name: c.name, hex: c.hex_code, stock: existing?.stock_quantity || 0 };
+  });
+  const extra = (productSizes || [])
+    .filter((s: any) => s.hex_code && !base.some((b) => b.name.toLowerCase() === s.size.toLowerCase()))
+    .map((s: any) => ({ name: s.size, hex: s.hex_code, stock: s.stock_quantity }));
+  return [...base, ...extra];
+}
 
 export default function ProductFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -39,6 +56,11 @@ export default function ProductFormPage() {
   const [sizes, setSizes] = useState<SizeStock[]>(
     SIZES.map((size) => ({ size, stock: 0 }))
   );
+  const [globalColors, setGlobalColors] = useState<{ name: string; hex_code: string }[]>([]);
+  const [productSizesData, setProductSizesData] = useState<any[] | null>(null);
+  const [colorStocks, setColorStocks] = useState<ColorStock[]>([]);
+  const [newColorHex, setNewColorHex] = useState("#000000");
+  const [newColorName, setNewColorName] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
@@ -47,8 +69,12 @@ export default function ProductFormPage() {
   const [loadingProduct, setLoadingProduct] = useState(isEdit);
   const [error, setError] = useState("");
 
+  const selectedCategory = categories.find((c) => String(c.id) === String(form.category_id));
+  const isBeanie = selectedCategory?.slug === BEANIE_CATEGORY_SLUG;
+
   useEffect(() => {
     api.get("/categories").then(({ data }) => setCategories(data));
+    api.get("/colors").then(({ data }) => setGlobalColors(data));
     if (isEdit) {
       // Load existing product - fetch by id via admin endpoint
       api.get(`/admin/products/${id}`)
@@ -66,6 +92,7 @@ export default function ProductFormPage() {
               const existing = data.sizes.find((x: any) => x.size === s);
               return { size: s, stock: existing?.stock_quantity || 0 };
             }));
+            setProductSizesData(data.sizes);
           }
           if (data.images) setExistingImages(data.images);
         })
@@ -73,6 +100,10 @@ export default function ProductFormPage() {
         .finally(() => setLoadingProduct(false));
     }
   }, [id]);
+
+  useEffect(() => {
+    setColorStocks(buildColorStocks(globalColors, productSizesData));
+  }, [globalColors, productSizesData]);
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
@@ -106,12 +137,26 @@ export default function ProductFormPage() {
   const setStock = (size: string, stock: number) =>
     setSizes((prev) => prev.map((s) => s.size === size ? { ...s, stock } : s));
 
+  const setColorStock = (name: string, stock: number) =>
+    setColorStocks((prev) => prev.map((c) => c.name === name ? { ...c, stock } : c));
+
+  const addColor = () => {
+    const name = newColorName.trim();
+    if (!name) return;
+    setColorStocks((prev) => {
+      if (prev.some((c) => c.name.toLowerCase() === name.toLowerCase())) return prev;
+      return [...prev, { name, hex: newColorHex, stock: 0 }];
+    });
+    setNewColorName("");
+    setNewColorHex("#000000");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!sizes.some((s) => s.stock > 0)) {
-      setError("Add stock for at least one size before publishing.");
+    if (isBeanie ? !colorStocks.some((c) => c.stock > 0) : !sizes.some((s) => s.stock > 0)) {
+      setError(`Add stock for at least one ${isBeanie ? "color" : "size"} before publishing.`);
       return;
     }
 
@@ -124,7 +169,10 @@ export default function ProductFormPage() {
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)));
-      fd.append("sizes", JSON.stringify(sizes));
+      const variantPayload = isBeanie
+        ? colorStocks.map((c) => ({ size: c.name, stock: c.stock, hex: c.hex }))
+        : sizes;
+      fd.append("sizes", JSON.stringify(variantPayload));
       images.forEach((img) => fd.append("images", img));
 
       // Longer timeout than the default 15s — multiple images means real
@@ -193,23 +241,59 @@ export default function ProductFormPage() {
           </div>
         </section>
 
-        {/* Sizes + stock */}
+        {/* Sizes / Colors + stock */}
         <section>
           <h2 className="text-[10px] tracking-widest uppercase font-bold mb-4 border-b border-border pb-2">
-            Sizes & Stock
+            {isBeanie ? "Colors & Stock" : "Sizes & Stock"}
           </h2>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-            {sizes.map(({ size, stock }) => (
-              <div key={size} className="text-center">
-                <p className="text-[10px] tracking-widest uppercase mb-2 text-muted-foreground">{size}</p>
-                <input
-                  type="number" min="0" value={stock}
-                  onChange={(e) => setStock(size, Number(e.target.value))}
-                  className="border border-border w-full text-center py-2 text-[16px] md:text-sm bg-transparent focus:outline-none focus:border-foreground"
-                />
+          {isBeanie ? (
+            <>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                {colorStocks.map(({ name, hex, stock }) => (
+                  <div key={name} className="text-center">
+                    <span
+                      className="inline-block w-6 h-6 rounded-full border border-border mb-1"
+                      style={{ backgroundColor: hex }}
+                      title={name}
+                    />
+                    <p className="text-[10px] tracking-widest uppercase mb-2 text-muted-foreground truncate">{name}</p>
+                    <input
+                      type="number" min="0" value={stock}
+                      onChange={(e) => setColorStock(name, Number(e.target.value))}
+                      className="border border-border w-full text-center py-2 text-[16px] md:text-sm bg-transparent focus:outline-none focus:border-foreground"
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+              <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border">
+                <input type="color" value={newColorHex}
+                  onChange={(e) => setNewColorHex(e.target.value)}
+                  className="w-11 h-11 border border-border cursor-pointer bg-transparent p-0 shrink-0" />
+                <input type="text" placeholder="New color name" value={newColorName}
+                  onChange={(e) => setNewColorName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addColor(); } }}
+                  className={`${inputCls} flex-1`} />
+                <MotionButton type="button" onClick={addColor}
+                  whileTap={tapScaleSm}
+                  className="border border-border px-4 py-3 text-xs tracking-widest uppercase shrink-0">
+                  Add Color
+                </MotionButton>
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+              {sizes.map(({ size, stock }) => (
+                <div key={size} className="text-center">
+                  <p className="text-[10px] tracking-widest uppercase mb-2 text-muted-foreground">{size}</p>
+                  <input
+                    type="number" min="0" value={stock}
+                    onChange={(e) => setStock(size, Number(e.target.value))}
+                    className="border border-border w-full text-center py-2 text-[16px] md:text-sm bg-transparent focus:outline-none focus:border-foreground"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Images */}

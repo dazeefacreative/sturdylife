@@ -86,7 +86,10 @@ router.get("/:slug", async (req, res) => {
     );
 
     const [sizes] = await db.query(
-      "SELECT size, stock_quantity FROM product_sizes WHERE product_id = ? ORDER BY id",
+      `SELECT ps.size, ps.stock_quantity, c.hex_code
+       FROM product_sizes ps
+       LEFT JOIN colors c ON c.name = ps.size
+       WHERE ps.product_id = ? ORDER BY ps.id`,
       [product.id]
     );
 
@@ -141,7 +144,16 @@ router.post("/", authenticate, adminOnly, ...upload.withCompression("images", 8)
     }
 
     // Sizes e.g. sizes = [{"size":"S","stock":10},{"size":"M","stock":5}]
+    // or, for color-based categories, [{"size":"Black","stock":10,"hex":"#000000"}] —
+    // a `hex` means this row is a color, so upsert it into the reusable
+    // colors registry before recording the stock.
     for (const s of parsedSizes) {
+      if (s.hex) {
+        await conn.query(
+          "INSERT INTO colors (name, hex_code) VALUES (?, ?) ON DUPLICATE KEY UPDATE hex_code = VALUES(hex_code)",
+          [s.size, s.hex]
+        );
+      }
       await conn.query(
         "INSERT INTO product_sizes (product_id, size, stock_quantity) VALUES (?, ?, ?)",
         [productId, s.size, s.stock || 0]
@@ -221,6 +233,12 @@ router.put("/:id", authenticate, adminOnly, ...upload.withCompression("images", 
     }
 
     for (const s of parsedSizes) {
+      if (s.hex) {
+        await conn.query(
+          "INSERT INTO colors (name, hex_code) VALUES (?, ?) ON DUPLICATE KEY UPDATE hex_code = VALUES(hex_code)",
+          [s.size, s.hex]
+        );
+      }
       await conn.query(
         `INSERT INTO product_sizes (product_id, size, stock_quantity) VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE stock_quantity = ?`,

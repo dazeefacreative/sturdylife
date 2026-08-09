@@ -280,7 +280,7 @@ export default function HomePage() {
 
           {loadingProducts ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10">
-              {[...Array(6)].map((_, i) => (
+              {[...Array(8)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-[4/5] bg-secondary mb-4" />
                   <div className="h-3 bg-secondary w-1/3 mb-2" />

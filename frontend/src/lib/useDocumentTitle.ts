@@ -5,7 +5,8 @@ import { useEffect } from "react";
 // what's in the DOM after JS runs, so it helps Google's JS-rendering crawler
 // and anyone viewing the page directly, but non-JS social-preview scrapers
 // (Facebook, Slack, etc.) will still see the static index.html tags on deep
-// links — that would need server-side rendering to fix properly.
+// links. Product share URLs are handled separately by the crawler redirect
+// in public/.htaccess and the backend's server-rendered share preview.
 export function useDocumentTitle(title: string, description?: string, image?: string) {
   useEffect(() => {
     const previousTitle = document.title;

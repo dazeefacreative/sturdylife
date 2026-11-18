@@ -10,3 +10,8 @@ export function getImageUrl(path?: string | null): string | undefined {
   if (/^https?:\/\//.test(path)) return path;
   return `${backendOrigin}${path}`;
 }
+
+export function getProductShareUrl(slug: string): string {
+  const apiUrl = import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
+  return `${apiUrl.replace(/\/+$/, "")}/share/product/${encodeURIComponent(slug)}`;
+}

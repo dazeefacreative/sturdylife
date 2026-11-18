@@ -62,6 +62,7 @@ Get the code onto the server. Easiest path since the repo is on GitHub (`dazeefa
 
 Back in **Setup Node.js App**, open the app and:
 - **Environment variables** — add every key from `backend/.env.example`, filled in with real production values (DB creds from step 3, JWT secret — generate a long random string, Paystack **live** secret key, SMTP creds, etc). Do **not** upload a `.env` file — cPanel injects these directly into `process.env`, which is what `server.js`/`dotenv` already expects.
+- Set `APP_URL=https://sturdylifer.com` and `API_URL=https://api.sturdylifer.com`. Product share links use the API to serve crawler-readable previews with each product's primary image.
 - Click **Run NPM Install** (installs `node_modules` fresh on the server's architecture — required for native deps like `sharp` and `bcryptjs`, don't copy `node_modules` from your machine).
 - Click **Restart**.
 
@@ -106,6 +107,7 @@ If using Namecheap Private Email instead of Gmail: cPanel → **Email Accounts**
 - [ ] Order receipt + admin alert emails arrive
 - [ ] `/admin` dashboard loads, product/image upload works (writes to `backend/uploads`)
 - [ ] Deep-link refresh (e.g. reload on `/shop/hoodies`) doesn't 404 — confirms `.htaccess` rewrite is active
+- [ ] Share a product from its product page or copy its product URL and confirm the share preview shows that product's image
 
 ## 10. Decommission Railway + Netlify
 

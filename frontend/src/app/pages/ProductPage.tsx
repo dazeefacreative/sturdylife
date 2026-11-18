@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Heart, ArrowLeft, Minus, Plus } from "lucide-react";
+import { Heart, ArrowLeft, Minus, Plus, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "@/lib/api";
-import { getImageUrl } from "@/lib/media";
+import { getImageUrl, getProductShareUrl } from "@/lib/media";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { SiteHeader } from "@/app/components/layout/SiteHeader";
@@ -38,6 +38,7 @@ export default function ProductPage() {
   const [activeImage, setActiveImage]   = useState(0);
   const [wishlisted, setWishlisted] = useState(false);
   const [adding, setAdding]         = useState(false);
+  const [shareMessage, setShareMessage] = useState("");
   const [sizeError, setSizeError]   = useState(false);
   const [related, setRelated]       = useState<any[]>([]);
 
@@ -95,6 +96,26 @@ export default function ProductPage() {
     } else {
       await api.post("/wishlist", { product_id: product.id });
       setWishlisted(true);
+    }
+  };
+
+  const shareProduct = async () => {
+    const url = getProductShareUrl(product.slug);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: product.name,
+          text: `Shop ${product.name} at Sturdy Life.`,
+          url,
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setShareMessage("Product link copied.");
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      setShareMessage("Unable to share this product. Please try again.");
+      console.error("Product share failed:", err);
     }
   };
 
@@ -287,6 +308,12 @@ export default function ProductPage() {
                 <Heart size={16} strokeWidth={1.5} className={wishlisted ? "fill-white stroke-white" : ""} />
               </motion.button>
             </div>
+            <MotionButton onClick={shareProduct}
+              initial="rest" whileHover="hover" whileTap={tapScaleSm} variants={ghostHoverVariants}
+              className="flex items-center gap-2 text-[10px] tracking-widest uppercase w-fit mb-4">
+              <Share2 size={14} /> Share this product
+            </MotionButton>
+            {shareMessage && <p role="status" className="text-xs text-muted-foreground mb-4">{shareMessage}</p>}
 
             {/* Perks */}
             <div className="border-t border-border pt-6 space-y-3">

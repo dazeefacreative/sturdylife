@@ -18,6 +18,11 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # Social crawlers need product metadata before JavaScript runs.
+  RewriteCond %{HTTP_USER_AGENT} (WhatsApp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|SkypeUriPreview) [NC]
+  RewriteRule ^product/([^/]+)/?$ https://api.sturdylifer.com/api/share/product/$1 [R=302,L,NE]
+
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d

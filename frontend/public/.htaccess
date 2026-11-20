@@ -1,0 +1,30 @@
+# Apache config for the built SPA (copied into dist/ by Vite on build).
+# Namecheap shared hosting serves this via public_html — no Netlify redirects here.
+
+# Serve gzip/brotli where available and cache static assets aggressively;
+# hashed filenames (index-XXXX.js) make this safe.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType video/mp4 "access plus 1 year"
+  ExpiresByType video/webm "access plus 1 year"
+</IfModule>
+
+# React Router client-side routing — send every non-file request to index.html.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Social crawlers need product metadata before JavaScript runs.
+  RewriteCond %{HTTP_USER_AGENT} (WhatsApp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|SkypeUriPreview) [NC]
+  RewriteRule ^product/([^/]+)/?$ https://api.sturdylifer.com/api/share/product/$1 [R=302,L,NE]
+
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>

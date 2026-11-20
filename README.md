@@ -1,11 +1,65 @@
+# Sturdy Life — Full Stack E-commerce
 
-  # E-commerce Fashion Store
+## Quick Start (Local Development)
 
-  This is a code bundle for E-commerce Fashion Store. The original project is available at https://www.figma.com/design/P78742Fwi56FJqtcyQwmhI/E-commerce-Fashion-Store.
+### 1. Database
+- Start MySQL (XAMPP / WAMP / Homebrew)
+- Create database: `sturdy_life`
+- Uncomment the `CREATE DATABASE` / `USE` lines at the top of `backend/schema.sql`, then run it in phpMyAdmin or MySQL CLI
 
-  ## Running the code
+### 2. Backend
+```bash
+cd backend
+npm install
+node server.js        # runs on http://localhost:3000
+```
 
-  Run `npm i` to install the dependencies.
+### 3. Frontend
+```bash
+cd frontend
+pnpm install
+pnpm dev              # runs on http://localhost:5173
+```
+Vite proxies /api → http://localhost:3000 automatically.
 
-  Run `npm run dev` to start the development server.
-  
+### 4. Create admin user
+```bash
+cd backend
+node -e "
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
+const db = require('./config/db');
+bcrypt.hash('Admin1234!', 12).then(hash => {
+  db.query('INSERT INTO users (first_name,last_name,email,password_hash,role) VALUES (?,?,?,?,?)',
+    ['Admin','User','admin@sturdylife.com',hash,'admin'])
+    .then(() => { console.log('Admin created'); process.exit(0); });
+});
+"
+```
+
+## Routes
+| URL | Description |
+|-----|-------------|
+| / | Homepage |
+| /shop | All products |
+| /shop/:category | Filtered products |
+| /product/:slug | Product detail |
+| /cart | Shopping cart |
+| /checkout | Place order |
+| /login | Sign in |
+| /register | Create account |
+| /account | Customer dashboard |
+| /account/orders | Order history |
+| /payment/success | After Paystack payment |
+| /admin | Admin dashboard |
+| /admin/products | Manage products |
+| /admin/orders | Manage orders |
+| /admin/customers | View customers |
+
+## Paystack Test Card
+- Number: `4084084084084081`
+- Expiry: Any future date
+- CVV: Any 3 digits
+
+## Production Deployment
+Hosted on Namecheap (cPanel) — frontend static build + backend Node/Passenger app + MySQL. See [NAMECHEAP_DEPLOY.md](NAMECHEAP_DEPLOY.md) for the full step-by-step.

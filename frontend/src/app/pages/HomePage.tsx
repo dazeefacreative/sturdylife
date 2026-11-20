@@ -112,7 +112,7 @@ export default function HomePage() {
 
   useEffect(() => {
     setLoadingProducts(true);
-    const params: Record<string, string> = { limit: "6" };
+    const params: Record<string, string> = { limit: "16" };
     if (activeFilter) params.category = activeFilter;
     api.get("/products", { params })
       .then(({ data }) => setProducts(data.products || []))
